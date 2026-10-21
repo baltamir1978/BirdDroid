@@ -9,4 +9,4 @@ se escribe desde cero, con la app original como especificación.
 
 ## Pila
 
-Kotlin + Jetpack Compose, para **Android 12 o posterior**.
+Kotlin + Jetpack Compose, para **Android 12 o posterior**, también en **GrapheneOS** (sin los servicios de Google).

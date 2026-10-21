@@ -32,11 +32,11 @@ hace, todo **en el dispositivo**:
 
 | En iOS | Aquí |
 |---|---|
-| Core ML | **LiteRT** (antes TensorFlow Lite). BirdNET nació en TFLite: `../BirdApp/_modelos/` ya tiene `BirdNET_classifier_only.tflite` |
+| Core ML | **LiteRT** (antes TensorFlow Lite), **con el runtime empaquetado en la app**, no la versión de Google Play Services (GrapheneOS). BirdNET nació en TFLite: `../BirdApp/_modelos/` ya tiene `BirdNET_classifier_only.tflite` |
 | `MelSpectrogramExtractor` + `filterbank1/2.bin` | Dos caminos: el modelo *classifier only* con el espectrograma calculado en Kotlin (como en iOS), o **el modelo completo oficial de BirdNET**, que recibe el audio tal cual (48 kHz, 3 s) y se ahorra el espectrograma. Probar primero el completo |
 | `meta_weights.bin` (filtro por lugar y semana) | El modelo de metadatos oficial de BirdNET en TFLite |
 | Modelo de fotos en Core ML | Google AIY Birds V1 existe en TFLite (Kaggle) |
-| Segmentación de sujetos de Vision | ML Kit, segmentación de sujetos |
+| Segmentación de sujetos de Vision | **No ML Kit**: su segmentación de sujetos se descarga por Google Play Services, que GrapheneOS no tiene. El candidato es **MediaPipe Interactive Image Segmenter**, que recorta el objeto a partir del punto tocado (justo el gesto del original) y lleva el modelo dentro de la app. Comprobar que funciona sin Google Play |
 | Extensión de compartir `BirdShare` | `intent-filter` con `ACTION_SEND` de `image/*`: mucho más sencillo que en iOS |
 | Escucha en segundo plano | Servicio en primer plano de tipo `microphone`, con notificación fija. **Desde Android 14 sólo se puede arrancar con la app delante** |
 | WidgetKit + notificaciones Darwin | Glance; el botón de escuchar habla con el servicio |
