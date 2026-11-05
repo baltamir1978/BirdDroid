@@ -6,8 +6,8 @@ la carpeta de proyectos; aquí va lo propio de esta.
 
 ## Estado (5-nov-2026)
 
-**0.1: compila y pasan 8 pruebas; sin probar en el móvil** (micrófono y cámara). APK en
-`~/Documentos/BirdDroid-0.1.apk` (66 MB, casi todo modelos; sólo arm64).
+**0.2: compila y pasan 8 pruebas; sin probar en el móvil** (micrófono y cámara). APK en
+`~/Documentos/BirdDroid-0.2.apk` (66 MB, casi todo modelos; sólo arm64).
 
 Comprobado aquí, en Python con LiteRT (`Tools/referencia/`):
 - **BirdNET completo en TFLite** (FP16, del repo oficial de BirdNET-Analyzer) con audio tal cual,

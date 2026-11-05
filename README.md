@@ -6,11 +6,12 @@ Versión para Android de [BirdApp](https://github.com/baltamir1978/BirdApp) (iOS
 cero en Kotlin + Jetpack Compose. Funciona sin Google Play (GrapheneOS): LiteRT va dentro de la
 app.
 
-**Estado: 0.1** (5-nov-2026), sin probar todavía en el móvil. Ver `CLAUDE.md`.
+**Estado: 0.2** (5-nov-2026), sin probar todavía en el móvil. Ver `CLAUDE.md`.
 
 ## Qué hace
 
 - **Por el canto** con BirdNET (GLOBAL 6K V2.4), en directo y también con la app minimizada.
+  Mientras escucha, un pájaro en el centro se llena de verde con el volumen, como en BirdApp.
 - **Por foto** con Google AIY Birds V1, con las especies pasadas a la taxonomía de BirdNET.
 - **Filtro por lugar y temporada**, con el sitio y la fecha **del EXIF** en las fotos.
 - **Fusión**: al identificar una foto, se prefieren las especies oídas hace poco.
