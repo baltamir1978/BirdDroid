@@ -4,9 +4,36 @@ Versión para Android de **BirdApp** (iOS), escrita **desde cero en Kotlin + Jet
 común a las apps de Android (firma, `versionCode`, secretos, distribución) está en el `CLAUDE.md` de
 la carpeta de proyectos; aquí va lo propio de esta.
 
-## Estado (21-oct-2026)
+## Estado (5-nov-2026)
 
-**Sin empezar.** Necesita móvil de verdad (micrófono y cámara), que Bruno aún no tiene.
+**0.1: compila y pasan 8 pruebas; sin probar en el móvil** (micrófono y cámara). APK en
+`~/Documentos/BirdDroid-0.1.apk` (66 MB, casi todo modelos; sólo arm64).
+
+Comprobado aquí, en Python con LiteRT (`Tools/referencia/`):
+- **BirdNET completo en TFLite** (FP16, del repo oficial de BirdNET-Analyzer) con audio tal cual,
+  48 kHz y 3 s, sin espectrograma: un mirlo de Wikimedia sale «Turdus merula» al 100 %.
+- **AIY Birds V1** (Kaggle, 224×224 RGB uint8; salida uint8 con escala 1/256): una foto de mirlo,
+  97 %. **Su clase de fondo se llama `None`** (en la conversión de iOS era `__background__`).
+- **El filtro por lugar y semana** con `meta_weights.bin` de iOS: correlación 0,9997 con el modelo
+  oficial MData de BirdNET; la traducción a Kotlin da los mismos números (prueba).
+
+Hecho, traducido de BirdApp: escucha en un servicio de tipo micrófono (ventanas de 3 s cada
+0,8 s, puertas de saturación y de señal, paso alto, sigmoide con sensibilidad, filtro suave de
+lugar al estilo whoBIRD, suavizado), candidatos y «pensando», historial sin repetir la misma
+especie en 10 min, **desempate** cuando el segundo queda al 65 % o más, fotos (galería con
+`ACCESS_MEDIA_LOCATION` y `setRequireOriginal`, cámara, compartir desde otra app), encuadre
+arrastrando un recuadro, EXIF (sitio y fecha para el filtro), **fusión audio↔foto** (lo oído en
+10 min sube y se renormaliza), ficha de Wikipedia, canto de xeno-canto (con clave), ajustes.
+
+Falta: **segmentación con un toque** (MediaPipe Interactive Image Segmenter: ahora el encuadre es
+a mano o el cuadrado central), el modelo ibérico de iOS, widgets, accesos directos, traducciones
+(es y en ahora; iOS tiene más), y probar en el móvil (sobre todo si la ubicación del EXIF llega
+con fotos compartidas desde Google Fotos).
+
+**Los modelos no van en el repositorio** (decidido el 5-nov-2026; el plan era Git LFS, pero aquí
+no había `git-lfs` y se prefirió no instalar binarios de fuera): `Tools/descargar-modelos.sh`
+los baja de sus fuentes oficiales a `app/src/main/assets/models/` (en `.gitignore`), y la
+compilación avisa si faltan.
 
 ## La especificación es el original
 

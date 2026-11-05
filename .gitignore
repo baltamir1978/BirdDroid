@@ -4,10 +4,11 @@ build/
 local.properties
 *.jks
 *.keystore
-keystore.properties
 .idea/
 *.iml
 captures/
-.externalNativeBuild/
-.cxx/
 .DS_Store
+__pycache__/
+
+# Los modelos se bajan con Tools/descargar-modelos.sh (~70 MB)
+app/src/main/assets/models/

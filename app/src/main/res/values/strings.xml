@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">BirdDroid</string>
+    <string name="tab_listen">Escuchar</string>
+    <string name="tab_photo">Foto</string>
+    <string name="tab_history">Historial</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="listening">Escuchando…</string>
+    <string name="analyzing">Analizando…</string>
+    <string name="stop">Parar</string>
+    <string name="tap_to_listen">Toca para escuchar</string>
+    <string name="maybe">¿%1$s? (%2$s)</string>
+    <string name="mic_failed">No se pudo abrir el micrófono</string>
+    <string name="recent">Últimas</string>
+    <string name="look_alike">Estas especies se parecen. ¿Cuál era?</string>
+    <string name="gallery">Galería</string>
+    <string name="camera">Cámara</string>
+    <string name="identify">Identificar</string>
+    <string name="auto_crop">Recorte automático</string>
+    <string name="framing_hint">Arrastra un recuadro sobre el pájaro, o deja el recorte central.</string>
+    <string name="no_bird">No parece que haya un pájaro. Prueba a encuadrarlo.</string>
+    <string name="analysed">Lo que se ha analizado</string>
+    <string name="heard_recently">Se ha oído cantar hace poco: cuenta a su favor.</string>
+    <string name="history_empty">Las aves que identifiques aparecerán aquí.</string>
+    <string name="today">Hoy</string>
+    <string name="play_song">Escuchar su canto</string>
+    <string name="xc_no_key">Pon tu clave de xeno-canto en Ajustes.</string>
+    <string name="xc_none">No hay grabaciones.</string>
+    <string name="threshold">Confianza mínima</string>
+    <string name="sensitivity">Sensibilidad</string>
+    <string name="location_filter">Filtro por lugar y temporada</string>
+    <string name="location_filter_hint">Da menos peso a las especies que no suelen estar donde estás en esta época (y en fotos, donde y cuando se hizo la foto).</string>
+    <string name="smoothing">Suavizado entre ventanas</string>
+    <string name="high_pass">Filtro de graves (tráfico, viento)</string>
+    <string name="signal_gate">Ignorar silencio y ruido grave</string>
+    <string name="clip_gate">Ignorar audio saturado</string>
+    <string name="fusion">Fotos: preferir lo oído hace poco</string>
+    <string name="background_minutes">Escucha en segundo plano</string>
+    <string name="xc_key">Clave de la API</string>
+    <string name="save">Guardar</string>
+    <string name="credits">BirdNET (Cornell Lab y TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · Wikipedia · xeno-canto</string>
+</resources>
