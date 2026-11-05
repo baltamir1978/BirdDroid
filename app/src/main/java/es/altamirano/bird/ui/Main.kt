@@ -22,6 +22,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
+import kotlin.math.sqrt
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.draw.shadow
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -211,11 +228,39 @@ private fun ListenScreen(onOpen: (Detection) -> Unit) {
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
         if (r[Manifest.permission.RECORD_AUDIO] == true) ListenService.start(context)
     }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        item { Title(stringResource(R.string.tab_listen)) }
-        item {
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(Modifier.size(140.dp).clip(CircleShape).background(if (state.listening) Color(0xFFFF3B30) else Green).clickable {
+    val latest = history.firstOrNull { !it.photo }
+    val tiebreak = latest != null && latest.needsTiebreak && System.currentTimeMillis() - latest.at < 600_000
+    // Como en iOS: el pájaro y lo que se oye en el centro, el botón del micrófono abajo
+    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        Title(stringResource(R.string.tab_listen))
+        LazyColumn(Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically)) {
+            item { BirdWave(state.level, state.listening, Modifier.fillMaxWidth().height(110.dp)) }
+            item {
+                Text(when {
+                    state.error != null -> state.error!!
+                    !state.listening -> stringResource(R.string.tap_to_listen)
+                    state.analyzing -> stringResource(R.string.analyzing)
+                    state.thinking != null -> stringResource(R.string.maybe, state.thinking!!.name, pct(state.thinking!!.confidence))
+                    else -> stringResource(R.string.listening)
+                }, Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                    color = if (state.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (state.candidates.isNotEmpty()) item {
+                Card {
+                    Column(Modifier.padding(vertical = 6.dp)) {
+                        state.candidates.forEachIndexed { i, c -> CandidateRow(c, i == 0) }
+                    }
+                }
+            }
+            if (tiebreak) item { Tiebreak(latest!!) }
+            if (history.isNotEmpty()) item { Text(stringResource(R.string.recent), fontWeight = FontWeight.SemiBold) }
+            items(history.take(5), key = { it.id }) { d -> HistoryRow(d) { onOpen(d) } }
+        }
+        val color by animateColorAsState(if (state.listening) Color(0xFFFF3B30) else Green, label = "botón")
+        Box(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 24.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(80.dp).shadow(if (state.listening) 16.dp else 6.dp, CircleShape, spotColor = color, ambientColor = color)
+                .clip(CircleShape).background(color).clickable {
                     if (state.listening) ListenService.stop(context)
                     else {
                         val perms = buildList { add(Manifest.permission.RECORD_AUDIO); add(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -224,30 +269,52 @@ private fun ListenScreen(onOpen: (Detection) -> Unit) {
                         else ask.launch(perms.toTypedArray())
                     }
                 }, contentAlignment = Alignment.Center) {
-                    Icon(if (state.listening) Icons.Filled.Stop else Icons.Filled.Mic, null, Modifier.size(64.dp), tint = Color.White)
-                }
-                Spacer(Modifier.height(12.dp))
-                if (state.listening) LinearProgressIndicator({ (state.level * 3).coerceIn(0f, 1f) }, Modifier.width(160.dp), color = Green)
-                Text(when {
-                    state.error != null -> state.error!!
-                    !state.listening -> stringResource(R.string.tap_to_listen)
-                    state.analyzing -> stringResource(R.string.analyzing)
-                    state.thinking != null -> stringResource(R.string.maybe, state.thinking!!.name, pct(state.thinking!!.confidence))
-                    else -> stringResource(R.string.listening)
-                }, Modifier.padding(top = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(if (state.listening) Icons.Filled.Stop else Icons.Filled.Mic, null, Modifier.size(36.dp), tint = Color.White)
             }
         }
-        if (state.candidates.isNotEmpty()) item {
-            Card {
-                Column(Modifier.padding(vertical = 6.dp)) {
-                    state.candidates.forEachIndexed { i, c -> CandidateRow(c, i == 0) }
-                }
+    }
+}
+
+/** Silueta de pájaro de perfil (mirando a la derecha), en una caja de 100×80. */
+private val BirdShape: Path by lazy {
+    PathParser().parsePathString(
+        "M70 13C79 13 85 18 87 25L98 28L87 32C86 44 79 54 67 60C57 65 46 67 36 66L24 73L5 77L17 66L6 61L28 57" +
+        "C33 44 45 37 55 33C55 21 61 13 70 13Z" +
+        "M76 21A3 3 0 1 0 76.01 21Z" +                    // el ojo (hueco)
+        "M52 64L50 76L53 76L55 64ZM60 62L60 75L63 75L63 61Z"  // las patas
+    ).toPath().apply { fillType = PathFillType.EvenOdd }
+}
+
+/**
+ * Lo mismo que `BirdWaveView` de iOS: el pájaro se llena de verde desde abajo según el volumen,
+ * crece un poco con el canto y, si hay señal, suelta ondas por detrás.
+ */
+@Composable
+private fun BirdWave(level: Float, listening: Boolean, modifier: Modifier = Modifier) {
+    // El pico en bruto es pequeño: la raíz deja ver también el canto flojo
+    val target = if (listening) sqrt(level.coerceAtLeast(0f)) * 1.6f else 0f
+    val amp by animateFloatAsState(target.coerceIn(0f, 1f), spring(dampingRatio = 0.7f, stiffness = 400f), label = "volumen")
+    val fill = if (listening) 0.18f + amp * 0.82f else 0.12f
+    val waves = rememberInfiniteTransition(label = "ondas")
+    val t by waves.animateFloat(0f, 1f, infiniteRepeatable(tween(1100, easing = LinearEasing)), label = "t")
+    Canvas(modifier) {
+        val h = size.height
+        val c = center
+        if (amp > 0.05f) for (ring in 0..2) {
+            val p = (t + ring / 3f) % 1f
+            drawCircle(Green.copy(alpha = (1 - p) * amp * 0.5f), h * (0.5f + p * 1.6f) / 2, c, style = Stroke(2.dp.toPx()))
+        }
+        val w = h * 1.3f
+        val s = (1 + amp * 0.12f) * minOf(w / 100f, h / 80f)
+        withTransform({
+            translate(c.x - 50f * s, c.y - 40f * s)
+            scale(s, s, Offset.Zero)
+        }) {
+            drawPath(BirdShape, Green.copy(alpha = 0.18f))
+            clipRect(top = 80f * (1 - fill)) {
+                drawPath(BirdShape, Brush.verticalGradient(listOf(Green.copy(alpha = 0.65f), Green), startY = 80f * (1 - fill), endY = 80f))
             }
         }
-        val latest = history.firstOrNull { !it.photo }
-        if (latest != null && latest.needsTiebreak && System.currentTimeMillis() - latest.at < 600_000) item { Tiebreak(latest) }
-        if (history.isNotEmpty()) item { Text(stringResource(R.string.recent), fontWeight = FontWeight.SemiBold) }
-        items(history.take(5), key = { it.id }) { d -> HistoryRow(d) { onOpen(d) } }
     }
 }
 
