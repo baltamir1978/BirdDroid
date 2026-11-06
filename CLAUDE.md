@@ -4,10 +4,18 @@ Versión para Android de **BirdApp** (iOS), escrita **desde cero en Kotlin + Jet
 común a las apps de Android (firma, `versionCode`, secretos, distribución) está en el `CLAUDE.md` de
 la carpeta de proyectos; aquí va lo propio de esta.
 
-## Estado (5-nov-2026)
+## Estado (6-nov-2026)
 
-**0.2: compila y pasan 8 pruebas; sin probar en el móvil** (micrófono y cámara). APK en
-`~/Documentos/BirdDroid-0.2.apk` (66 MB, casi todo modelos; sólo arm64).
+**0.3: compila y pasan 9 pruebas.** APK en `~/Documentos/BirdDroid-0.3.apk` (66 MB, casi todo
+modelos; sólo arm64). En el móvil, la 0.2 oía pájaros cerca pero se quedaba en «¿quizá…?». La 0.3:
+- **La sensibilidad iba al revés** (también en iOS): se usaba como pendiente de la sigmoide, y con
+  el umbral por debajo del 50 % una pendiente mayor exige más. Ahora es como en BirdNET-Analyzer:
+  pendiente = 2 − sensibilidad (`Settings.slope`).
+- **La ganancia no importa**: BirdNET normaliza cada ventana (mismo logit con el audio a 1/10.000,
+  comprobado en Python). Subir el volumen no ayuda; lo que cuenta es la relación señal/ruido.
+- La captura ya no espera al modelo (antes se analizaba dentro del bucle de lectura con un búfer
+  de 1 s y se perdían muestras); el medidor va en dB; Ajustes comparte los últimos 15 s en WAV
+  para analizarlos aquí con `Tools/referencia/birdnet_check.py`.
 
 Comprobado aquí, en Python con LiteRT (`Tools/referencia/`):
 - **BirdNET completo en TFLite** (FP16, del repo oficial de BirdNET-Analyzer) con audio tal cual,

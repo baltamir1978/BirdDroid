@@ -29,6 +29,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,6 +54,18 @@ data class ListenState(
 object ListenBus {
     val state = MutableStateFlow(ListenState())
     @Volatile var foreground = true
+
+    /** Los últimos 15 s del micrófono, para poder compartirlos (y ver qué le llega al modelo). */
+    private val recent = FloatArray(Signal.RATE * 15)
+    private var recentPos = 0
+    private var recentFilled = 0
+    @Synchronized fun clearRecent() { recentPos = 0; recentFilled = 0 }
+    @Synchronized fun addRecent(x: FloatArray) {
+        for (v in x) { recent[recentPos] = v; recentPos = (recentPos + 1) % recent.size }
+        recentFilled = minOf(recent.size, recentFilled + x.size)
+    }
+    @Synchronized fun recentAudio(): FloatArray =
+        FloatArray(recentFilled) { recent[(recentPos - recentFilled + it + recent.size) % recent.size] }
 }
 
 /**
@@ -92,47 +107,76 @@ class ListenService : Service() {
     @SuppressLint("MissingPermission")
     private suspend fun listen() {
         val app = applicationContext.app
-        val models = app.models
-        val scorer = Scorer(models.labels)
+        val scorer = Scorer(app.models.labels)
         // UNPROCESSED: el audio tal cual, sin el procesado del sistema (como `.measurement` en iOS).
+        // Llega flojo porque no hay control automático de ganancia, pero a BirdNET le da igual: normaliza
+        // cada ventana (comprobado: el mismo logit con el audio a 1/10.000). Lo que sí le estorbaría es
+        // la supresión de ruido de las fuentes de voz, que se come los cantos.
         val format = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_FLOAT).setSampleRate(Signal.RATE)
             .setChannelMask(AudioFormat.CHANNEL_IN_MONO).build()
         val minBuf = AudioRecord.getMinBufferSize(Signal.RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT)
-        val rec = runCatching {
-            AudioRecord.Builder().setAudioSource(MediaRecorder.AudioSource.UNPROCESSED).setAudioFormat(format)
-                .setBufferSizeInBytes(maxOf(minBuf, Signal.RATE * 4)).build().takeIf { it.state == AudioRecord.STATE_INITIALIZED }
-        }.getOrNull() ?: runCatching {
-            AudioRecord.Builder().setAudioSource(MediaRecorder.AudioSource.MIC).setAudioFormat(format)
-                .setBufferSizeInBytes(maxOf(minBuf, Signal.RATE * 4)).build()
+        val bufBytes = maxOf(minBuf, Signal.RATE * 4 * 4)           // 4 s de margen
+        fun build(source: Int) = runCatching {
+            AudioRecord.Builder().setAudioSource(source).setAudioFormat(format).setBufferSizeInBytes(bufBytes).build()
+                .also { if (it.state != AudioRecord.STATE_INITIALIZED) { it.release(); error("sin iniciar") } }
         }.getOrNull()
-        if (rec == null || rec.state != AudioRecord.STATE_INITIALIZED) {
+        val rec = build(MediaRecorder.AudioSource.UNPROCESSED) ?: build(MediaRecorder.AudioSource.MIC)
+        if (rec == null) {
             ListenBus.state.update { it.copy(error = getString(R.string.mic_failed)) }; stopSelf(); return
         }
         ListenBus.state.update { ListenState(listening = true) }
+        ListenBus.clearRecent()
+        // La captura no espera nunca al modelo: si el análisis tarda (la primera vez carga el modelo y
+        // calcula el filtro de lugar), el micrófono no pierde muestras y las ventanas siguen siendo
+        // audio seguido. Antes se analizaba dentro del bucle de lectura y el búfer de 1 s se desbordaba.
+        val chunks = Channel<FloatArray>(Channel.UNLIMITED)
+        val pending = AtomicInteger(0)
+        val analysis = scope.launch { analyzeLoop(chunks, pending, scorer) }
         rec.startRecording()
-        val acc = FloatArray(Signal.WINDOW)
-        var filled = 0
-        val chunk = FloatArray(Signal.RATE / 10)
         try {
-            while (scope.isActive) {
-                val n = rec.read(chunk, 0, chunk.size, AudioRecord.READ_BLOCKING)
-                if (n <= 0) continue
-                var peak = 0f; for (i in 0 until n) peak = maxOf(peak, kotlin.math.abs(chunk[i]))
-                ListenBus.state.update { it.copy(level = peak) }
-                var i = 0
-                while (i < n) {
-                    val take = minOf(n - i, Signal.WINDOW - filled)
-                    System.arraycopy(chunk, i, acc, filled, take); filled += take; i += take
-                    if (filled == Signal.WINDOW) {
-                        analyze(acc.copyOf(), scorer)
-                        // Se desliza 0,8 s: ~73 % de solape entre ventanas.
-                        System.arraycopy(acc, Signal.HOP, acc, 0, Signal.WINDOW - Signal.HOP); filled = Signal.WINDOW - Signal.HOP
-                    }
+            withContext(Dispatchers.IO) {
+                val chunk = FloatArray(Signal.RATE / 10)
+                while (isActive) {
+                    val n = rec.read(chunk, 0, chunk.size, AudioRecord.READ_BLOCKING)
+                    if (n <= 0) continue
+                    val part = chunk.copyOf(n)
+                    var sum = 0.0; for (v in part) sum += v * v
+                    ListenBus.state.update { it.copy(level = kotlin.math.sqrt(sum / n).toFloat()) }
+                    ListenBus.addRecent(part)
+                    pending.addAndGet(n); chunks.trySend(part)
+                    autoStopInBackground(app.prefs.backgroundMinutes)
                 }
-                autoStopInBackground(app.prefs.backgroundMinutes)
             }
         } finally {
+            chunks.close(); analysis.cancel()
             rec.stop(); rec.release()
+        }
+    }
+
+    /** Ventanas de 3 s cada 0,8 s (~73 % de solape, como whoBIRD) sobre el audio capturado. */
+    private suspend fun analyzeLoop(chunks: Channel<FloatArray>, pending: AtomicInteger, scorer: Scorer) {
+        val acc = FloatArray(Signal.WINDOW)
+        var filled = 0
+        for (c in chunks) {
+            pending.addAndGet(-c.size)
+            var i = 0
+            while (i < c.size) {
+                val take = minOf(c.size - i, Signal.WINDOW - filled)
+                System.arraycopy(c, i, acc, filled, take); filled += take; i += take
+                if (filled == Signal.WINDOW) {
+                    analyze(acc.copyOf(), scorer)
+                    System.arraycopy(acc, Signal.HOP, acc, 0, Signal.WINDOW - Signal.HOP); filled = Signal.WINDOW - Signal.HOP
+                    // Si el móvil no da abasto y se acumula más de una ventana, se salta a lo último:
+                    // mejor analizar lo que suena ahora que lo de hace diez segundos.
+                    if (pending.get() > Signal.WINDOW) {
+                        while (pending.get() > Signal.WINDOW - Signal.HOP) {
+                            val old = chunks.tryReceive().getOrNull() ?: break
+                            pending.addAndGet(-old.size)
+                        }
+                        filled = 0; i = c.size
+                    }
+                }
+            }
         }
     }
 

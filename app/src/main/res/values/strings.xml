@@ -39,4 +39,7 @@
     <string name="xc_key">Clave de la API</string>
     <string name="save">Guardar</string>
     <string name="credits">BirdNET (Cornell Lab y TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · Wikipedia · xeno-canto</string>
+    <string name="share_audio">Compartir los últimos 15 s del micrófono</string>
+    <string name="share_audio_hint">En WAV, tal cual le llega al modelo: sirve para comprobar qué oye el móvil.</string>
+    <string name="share_audio_empty">Todavía no hay audio: escucha un rato primero.</string>
 </resources>

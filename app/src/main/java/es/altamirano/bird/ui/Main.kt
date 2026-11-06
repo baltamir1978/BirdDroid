@@ -3,7 +3,9 @@
 package es.altamirano.bird.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import android.content.pm.PackageManager
 import android.graphics.RectF
 import android.media.MediaPlayer
@@ -134,6 +136,7 @@ import es.altamirano.bird.app
 import es.altamirano.bird.core.Candidate
 import es.altamirano.bird.data.Alternative
 import es.altamirano.bird.data.Detection
+import es.altamirano.bird.core.Signal
 import es.altamirano.bird.listen.ListenBus
 import es.altamirano.bird.listen.ListenService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -291,8 +294,10 @@ private val BirdShape: Path by lazy {
  */
 @Composable
 private fun BirdWave(level: Float, listening: Boolean, modifier: Modifier = Modifier) {
-    // El pico en bruto es pequeño: la raíz deja ver también el canto flojo
-    val target = if (listening) sqrt(level.coerceAtLeast(0f)) * 1.6f else 0f
+    // En decibelios, de −70 dBFS (silencio de campo con el micrófono sin procesar) a −20 (muy fuerte):
+    // sin control de ganancia, el canto de un pájaro a unos metros queda por −50 … −35 dBFS, y con
+    // la escala lineal casi no se veía. Es sólo para verlo: BirdNET no depende del volumen.
+    val target = if (listening) (Signal.dbfs(level) + 70f) / 50f else 0f
     val amp by animateFloatAsState(target.coerceIn(0f, 1f), spring(dampingRatio = 0.7f, stiffness = 400f), label = "volumen")
     val fill = if (listening) 0.18f + amp * 0.82f else 0.12f
     val waves = rememberInfiniteTransition(label = "ondas")
@@ -573,6 +578,15 @@ private fun SettingsScreen() {
             }
         }
         item {
+            val context = LocalContext.current
+            Card {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(onClick = { shareRecentAudio(context) }) { Text(stringResource(R.string.share_audio)) }
+                    Text(stringResource(R.string.share_audio_hint), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
             Card {
                 Column(Modifier.padding(16.dp)) {
                     SliderRow(stringResource(R.string.background_minutes), bg.toFloat(), 5f..120f, "$bg min") { v -> bg = v.roundToInt(); app.prefs.backgroundMinutes = bg }
@@ -594,6 +608,19 @@ private fun SettingsScreen() {
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+/** Los últimos 15 s del micrófono en WAV, tal cual le llegan al modelo. */
+private fun shareRecentAudio(context: Context) {
+    val audio = ListenBus.recentAudio()
+    if (audio.isEmpty()) { Toast.makeText(context, R.string.share_audio_empty, Toast.LENGTH_SHORT).show(); return }
+    val dir = java.io.File(context.cacheDir, "audio").apply { mkdirs() }
+    val f = java.io.File(dir, "birddroid-${System.currentTimeMillis() / 1000}.wav")
+    dir.listFiles()?.forEach { it.delete() }
+    f.writeBytes(Signal.wav(audio))
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fotos", f)
+    context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("audio/wav")
+        .putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), null))
 }
 
 @Composable

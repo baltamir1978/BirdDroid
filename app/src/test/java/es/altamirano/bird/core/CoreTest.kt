@@ -56,11 +56,20 @@ class ScoringTest {
         val scorer = Scorer(labels)
         val logits = floatArrayOf(4f, 0f, -4f)
         val (above, thinking) = scorer.score(logits, Settings(threshold = 0.35f, sensitivity = 1.3f, locationInfluence = 0f), null)
-        assertEquals(listOf("Turdus merula", "Turdus philomelos"), above.map { it.scientific })   // 0,99 y 0,5
+        assertEquals(listOf("Turdus merula", "Turdus philomelos"), above.map { it.scientific })   // 0,94 y 0,5
         assertNull(thinking)
         // Con el filtro de lugar al 70 %: una especie que no está aquí (meta 0) baja al 30 %.
         val (filtered, _) = scorer.score(logits, Settings(threshold = 0.35f, locationInfluence = 0.7f), floatArrayOf(0f, 1f, 1f))
         assertEquals(listOf("Turdus philomelos"), filtered.map { it.scientific })
+    }
+
+    @Test fun moreSensitivityLetsFaintSongThrough() {
+        // Un canto flojo (logit −0,8): con sensibilidad 1,4 pasa del 35 %; con 0,6, no.
+        val faint = floatArrayOf(-0.8f, -5f, -5f)
+        val (eager, _) = Scorer(labels).score(faint, Settings(threshold = 0.35f, sensitivity = 1.4f, locationInfluence = 0f), null)
+        val (strict, _) = Scorer(labels).score(faint, Settings(threshold = 0.35f, sensitivity = 0.6f, locationInfluence = 0f), null)
+        assertEquals(listOf("Turdus merula"), eager.map { it.scientific })
+        assertTrue(strict.isEmpty())
     }
 
     @Test fun thinkingWhenNothingCrossesTheThreshold() {

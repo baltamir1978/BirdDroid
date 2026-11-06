@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths><cache-path name="camara" path="camara/" /></paths>
+<paths><cache-path name="camara" path="camara/" /><cache-path name="audio" path="audio/" /></paths>

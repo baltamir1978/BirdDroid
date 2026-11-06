@@ -130,7 +130,7 @@ class LocationFilter(bytes: ByteBuffer) {
 
 data class Settings(
     val threshold: Float = 0.35f,            // confianza mínima
-    val sensitivity: Float = 1.3f,           // pendiente de la sigmoide (0,5 … 1,5)
+    val sensitivity: Float = 1.3f,           // 0,5 … 1,5: más alto = más dispuesto (ver `slope`)
     val smoothing: Boolean = false,          // consenso entre ventanas solapadas
     val locationInfluence: Float = 0.7f,     // 0 = sin filtro … 1 = filtro completo
     val highPass: Boolean = false,
@@ -139,6 +139,14 @@ data class Settings(
     val clipGate: Boolean = true,
     val fusion: Boolean = true,              // foto: preferir lo oído hace poco
 )
+
+/**
+ * La pendiente de la sigmoide, como en BirdNET-Analyzer: `2 − sensibilidad`. Subir la sensibilidad
+ * **aplana** la curva, y así los logits negativos (cantos flojos o lejanos) se acercan al 50 % y
+ * pasan el umbral. Usarla tal cual como pendiente (como hacían iOS y la 0.2) hacía lo contrario de
+ * lo que dice el ajuste: con el umbral por debajo del 50 %, una pendiente mayor exige más.
+ */
+val Settings.slope: Float get() = (2f - sensitivity).coerceIn(0.5f, 1.5f)
 
 data class Candidate(val row: Int, val scientific: String, val name: String, val confidence: Double)
 
@@ -151,7 +159,7 @@ class Scorer(private val labels: Labels) {
      */
     fun score(logits: FloatArray, s: Settings, meta: FloatArray?): Pair<List<Candidate>, Candidate?> {
         val combined = FloatArray(logits.size) { i ->
-            var p = (1 / (1 + exp(-s.sensitivity * logits[i].toDouble()))).toFloat()
+            var p = (1 / (1 + exp(-s.slope * logits[i].toDouble()))).toFloat()
             if (meta != null && s.locationInfluence > 0 && i < meta.size) p *= (1 - s.locationInfluence) + s.locationInfluence * meta[i]
             p
         }
@@ -171,6 +179,19 @@ object Signal {
     const val RATE = 48_000
     const val WINDOW = 144_000      // 3 s
     const val HOP = 38_400          // 0,8 s: ~73 % de solape (como whoBIRD)
+
+    /** Nivel en dBFS (0 = el máximo). BirdNET no depende del volumen: esto es sólo para verlo. */
+    fun dbfs(rms: Float): Float = if (rms <= 1e-7f) -140f else 20 * kotlin.math.log10(rms)
+
+    /** WAV mono de 16 bits, para compartir lo que oyó el micrófono. */
+    fun wav(x: FloatArray, rate: Int = RATE): ByteArray {
+        val b = ByteBuffer.allocate(44 + x.size * 2).order(ByteOrder.LITTLE_ENDIAN)
+        b.put("RIFF".toByteArray()).putInt(36 + x.size * 2).put("WAVE".toByteArray())
+        b.put("fmt ".toByteArray()).putInt(16).putShort(1).putShort(1).putInt(rate).putInt(rate * 2).putShort(2).putShort(16)
+        b.put("data".toByteArray()).putInt(x.size * 2)
+        for (v in x) b.putShort((v.coerceIn(-1f, 1f) * 32767).toInt().toShort())
+        return b.array()
+    }
 
     /** Más del 0,5 % de muestras saturadas. */
     fun isClipped(x: FloatArray): Boolean = x.count { abs(it) >= 0.99f }.toFloat() / x.size > 0.005f
