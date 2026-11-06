@@ -6,6 +6,8 @@ la carpeta de proyectos; aquí va lo propio de esta.
 
 ## Estado (6-nov-2026)
 
+**0.3.1 (6-nov-2026): modo escritorio** — en ventana ancha (modo escritorio, tableta) el contenido se centra a 720 dp con el margen como `contentPadding` (la rueda del ratón desplaza también sobre él), y la actividad no se recrea al redimensionar (`configChanges`). Piezas en `ui/Adaptive.kt`; sin probar en modo escritorio de verdad. En ventana ancha la barra inferior pasa a riel a la izquierda (`AdaptiveNavigation`). APK en `~/Documentos/BirdDroid-0.3.1.apk`.
+
 **0.3: compila y pasan 9 pruebas.** APK en `~/Documentos/BirdDroid-0.3.apk` (66 MB, casi todo
 modelos; sólo arm64). En el móvil, la 0.2 oía pájaros cerca pero se quedaba en «¿quizá…?». La 0.3:
 - **La sensibilidad iba al revés** (también en iOS): se usaba como pendiente de la sigmoide, y con

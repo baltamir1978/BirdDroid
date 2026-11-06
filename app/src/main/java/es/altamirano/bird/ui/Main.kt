@@ -192,22 +192,16 @@ private fun Root(incoming: MutableStateFlow<Uri?>) {
     LaunchedEffect(shared) { if (shared != null) tab = 1 }
     var detail by remember { mutableStateOf<Detection?>(null) }
     detail?.let { d -> BackHandler { detail = null }; DetailScreen(d) { detail = null }; return }
-    Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
-        NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-            listOf(Triple(R.string.tab_listen, Icons.Filled.Mic, 0), Triple(R.string.tab_photo, Icons.Filled.CameraAlt, 1),
-                Triple(R.string.tab_history, Icons.Filled.History, 2), Triple(R.string.tab_settings, Icons.Filled.Settings, 3)).forEach { (l, ic, i) ->
-                NavigationBarItem(tab == i, { tab = i }, { Icon(ic, null) }, label = { Text(stringResource(l)) },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = MaterialTheme.colorScheme.primary, indicatorColor = MaterialTheme.colorScheme.primaryContainer))
-            }
-        }
-    }) { p ->
-        Box(Modifier.padding(bottom = p.calculateBottomPadding()).fillMaxSize()) {
-            when (tab) {
-                0 -> ListenScreen { detail = it }
-                1 -> PhotoScreen(shared) { incoming.value = null }
-                2 -> HistoryScreen { detail = it }
-                else -> SettingsScreen()
-            }
+    val items = listOf(Triple(R.string.tab_listen, Icons.Filled.Mic, 0), Triple(R.string.tab_photo, Icons.Filled.CameraAlt, 1),
+        Triple(R.string.tab_history, Icons.Filled.History, 2), Triple(R.string.tab_settings, Icons.Filled.Settings, 3)).map { (l, ic, i) ->
+        NavItem(tab == i, { tab = i }, { Icon(ic, null) }, { Text(stringResource(l)) })
+    }
+    AdaptiveNavigation(items) {
+        when (tab) {
+            0 -> ListenScreen { detail = it }
+            1 -> PhotoScreen(shared) { incoming.value = null }
+            2 -> HistoryScreen { detail = it }
+            else -> SettingsScreen()
         }
     }
 }
@@ -234,7 +228,7 @@ private fun ListenScreen(onOpen: (Detection) -> Unit) {
     val latest = history.firstOrNull { !it.photo }
     val tiebreak = latest != null && latest.needsTiebreak && System.currentTimeMillis() - latest.at < 600_000
     // Como en iOS: el pájaro y lo que se oye en el centro, el botón del micrófono abajo
-    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    Column(Modifier.fillMaxSize().padding(horizontal = gutter())) {
         Title(stringResource(R.string.tab_listen))
         LazyColumn(Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically)) {
@@ -386,7 +380,7 @@ private fun PhotoScreen(shared: Uri?, onConsumed: () -> Unit) {
     val cameraUri = remember { FileProvider.getUriForFile(context, "${context.packageName}.fotos", cameraFile) }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok -> if (ok) open(cameraUri) }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item { Title(stringResource(R.string.tab_photo)) }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -468,7 +462,7 @@ private fun HistoryScreen(onOpen: (Detection) -> Unit) {
     val app = LocalContext.current.app
     val items by app.history.items.collectAsStateWithLifecycle()
     val byDay = items.groupBy { Instant.ofEpochMilli(it.at).atZone(ZoneId.systemDefault()).toLocalDate() }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { Title(stringResource(R.string.tab_history)) }
         if (items.isEmpty()) item { Text(stringResource(R.string.history_empty), color = MaterialTheme.colorScheme.onSurfaceVariant) }
         byDay.forEach { (day, list) ->
@@ -516,7 +510,7 @@ private fun DetailScreen(start: Detection, onBack: () -> Unit) {
             actions = { IconButton(onClick = { app.history.remove(d); onBack() }) { Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error) } },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
     }) { p ->
-        LazyColumn(Modifier.padding(p).fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        LazyColumn(Modifier.padding(p).fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             item { info?.image?.let { AsyncImage(it, null, Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(14.dp)), contentScale = ContentScale.Crop) } }
             item {
                 Text(d.scientific, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -550,7 +544,7 @@ private fun SettingsScreen() {
     val s by app.prefs.settings.collectAsStateWithLifecycle()
     var key by remember { mutableStateOf(app.prefs.xenoCantoKey) }
     var bg by remember { mutableIntStateOf(app.prefs.backgroundMinutes) }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Title(stringResource(R.string.tab_settings)) }
         item {
             Card {
