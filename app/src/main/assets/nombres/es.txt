@@ -1,0 +1,127 @@
+Accipiter superciliosus_Azor menor americano
+Acrocephalus baeticatus_Carricero Africano
+Alouatta pigra_Araguato De Guatemala
+Amazilia beryllina_Amazilia berilina
+Amazilia violiceps_Amazilia coronivioleta
+Ammodramus maritimus_Chingolo Costero
+Ammodramus nelsoni_Chingolo de Nelson
+Anas americana_Silbón americano
+Anas bahamensis_Pato gargantilla
+Anas chlorotis_Cerceta maorí
+Anas clypeata_Cuchara común
+Anas cyanoptera_Cerceta colorada
+Anas discors_Cerceta aliazul
+Anas penelope_Silbón europeo
+Anas querquedula_Cerceta carretona
+Anas strepera_Ánade friso
+Anastomus lamelligerus_Picotenaza africano
+Anhinga rufa_Anhinga africana
+Apis mellifera_Abeja melífera
+Ardenna gravis_Pardela cabeza negra
+Ardeotis kori_Avutarda kori
+Aythya novaeseelandiae_Porrón maorí
+Bubo coromandus_Búho de Coromandel
+Bubo lacteus_Búho lechoso
+Bubo nipalensis_Búho Nepalí
+Bubo sumatranus_Búho malayo
+Calendulauda alopex_Alondra Vulpina
+Calyptorhynchus funereus_Cacatúa fúnebre coliamarilla
+Calyptorhynchus latirostris_Cacatúa fúnebre piquicorta
+Canis latrans_coyote
+Canis lupus_Lobo
+Caprimulgus nigriscapularis_Chotacabras Hombronegro
+Caracara cheriway_Carancho Norteño
+Cathartes burrovianus_Aura sabanera
+Cerorhinca monocerata_Alca unicórnea
+Ciccaba albitarsis_Cárabo patiblanco
+Ciccaba huhula_Cárabo negro
+Ciccaba nigrolineata_Cárabo blanquinegro
+Ciccaba virgata_Cárabo café
+Clytolaema rubricauda_Colibrí colirrojo
+Columba larvata_Paloma caripálida
+Corvus caurinus_Cuervo de Alaska
+Cossypha polioptera_Akelat aligrís
+Cyornis hoevelli_Papamoscas Frentiazul
+Drepanis coccinea_Iiwi
+Ephippiorhynchus senegalensis_Jabirú africano
+Euphonia elegantissima_Eufonia Elegante
+Falcipennis canadensis_Gallo canadiense
+Falco novaeseelandiae_Halcón maorí
+Francolinus pondicerianus_Francolín gris
+Fratercula cirrhata_Frailecillo coletudo
+Gastrophryne olivacea_Sapo-boca Angosta Oliváceo
+Gymnogyps californianus_Cóndor Californiano
+Gyps africanus_Buitre dorsiblanco africano
+Hemignathus wilsoni_Akiapolaau
+Hemiphaga novaeseelandiae_Paloma maorí
+Himatione sanguinea_Apapane
+Horornis vulcanius_Cetia de la Sonda
+Hyliola regilla_Rana-de coro del pacífico
+Hymenolaimus malacorhynchos_Pato azul
+Larus thayeri_Gaviota esquimal
+Lithobates catesbeianus_Rana Toro
+Lonchura oryzivora_Capuchino Arrocero de Java
+Magumma parva_Anianiau
+Megadyptes antipodes_Pingüino ojigualdo
+Megalurus palustris_Yerbera Palustre
+Microcarbo melanoleucos_Cormorán piquicorto
+Milvago chimachima_Caracara chimachima
+Milvago chimango_Caracara chimango
+Mirafra cantillans_Alondra Cantarina
+Morus serrator_Alcatraz australiano
+Mycteria ibis_Tántalo africano
+Nestor notabilis_Kea
+Nyctibius bracteatus_Nictibio rufo
+Oceanites oceanicus_Paíño común
+Ochthoeca diadema_Pitajo diademado
+Ochthoeca frontalis_Pitajo coronado
+Ochthoeca jelskii_Pitajo de Jelski
+Ochthoeca pulchella_Pitajo cejidorado
+Odocoileus virginianus_Cariacú
+Otocichla mupinensis_Zorzal Chino
+Otus madagascariensis_Autillo de Madagascar
+Palmeria dolei_Akohekohe
+Pelecanus onocrotalus_Pelícano común
+Phaeomyias murina_Piojito Pardo
+Phalacrocorax auritus_Cormorán orejudo
+Phalacrocorax brasilianus_Biguá
+Phalacrocorax pelagicus_Cormoran pelagico
+Phalacrocorax penicillatus_Cormoran sargento
+Phalacrocorax sulcirostris_Cormorán totinegro
+Phalacrocorax varius_Cormorán pío
+Phylloscartes difficilis_Orejerito de Serra do Mar
+Phylloscartes eximius_Mosqueta media luna
+Phylloscartes lanyoni_Orejerito Antioqueño
+Phylloscartes ophthalmicus_Orejerito Jaspeado
+Phylloscartes paulista_Mosqueta oreja negra
+Phylloscartes poecilotis_Orejerito Variegado
+Phylloscopus occisinensis_Mosquitero de Qinghai
+Picoides albolarvatus_Pico Cabeciblanco
+Picoides nuttallii_Pico de Nuttall
+Picoides pubescens_Pico Pubescente
+Picoides villosus_Pico Velloso
+Pitangus lictor_Benteveo pico fino
+Platalea alba_Espátula africana
+Platalea regia_Espátula real
+Porphyrio hochstetteri_Calamón takahe
+Psophocichla litsitsirupa_Zorzal Litsitsirupa
+Pteruthius ripleyi_Timalí-alcaudón himalayo
+Ptilostomus afer_Piapiac
+Regulus calendula_Reyezuelo rubí
+Sagittarius serpentarius_Secretario
+Sakesphorus cristatus_Batará Crestado
+Sapayoa aenigma_Sapayoa
+Sarcoramphus papa_Jote real papa
+Sciurus carolinensis_Ardilla gris
+Sericornis citreogularis_Sedosito Gorjigualdo
+Serpophaga munda_Piojito Ventriblanco
+Streptopelia chinensis_Tórtola moteada
+Streptopelia senegalensis_Tórtola senegalesa
+Struthio camelus_Avestruz común
+Sula granti_Piquero nazca
+Sylvia communis_Curruca Zarcera
+Tamias striatus_Ardilla listada
+Tamiasciurus hudsonicus_Ardilla roja americana
+Terathopius ecaudatus_Águila volatinera
+Threskiornis aethiopicus_Ibis sagrado
+Tumbezia salvini_Pitajo de Tumbes

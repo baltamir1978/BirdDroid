@@ -9,6 +9,8 @@ import android.graphics.RectF
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.exifinterface.media.ExifInterface
+import coil.ImageLoader
+import coil.ImageLoaderFactory
 import es.altamirano.bird.core.Candidate
 import es.altamirano.bird.core.Labels
 import es.altamirano.bird.core.applyAudioPrior
@@ -31,7 +33,7 @@ import java.time.ZoneId
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class BirdApp : Application() {
+class BirdApp : Application(), ImageLoaderFactory {
     lateinit var models: Models; private set
     lateinit var history: History; private set
     lateinit var prefs: Prefs; private set
@@ -39,9 +41,12 @@ class BirdApp : Application() {
     override fun onCreate() {
         super.onCreate()
         models = Models(this)
-        history = History(this)
+        history = History(this) { models.labels }
         prefs = Prefs(this)
     }
+
+    /** Las fotos de Wikimedia, con nuestro User-Agent: al de serie de OkHttp le responden 403. */
+    override fun newImageLoader() = ImageLoader.Builder(this).okHttpClient(http).crossfade(true).build()
 }
 
 val Context.app: BirdApp get() = applicationContext as BirdApp
@@ -114,7 +119,7 @@ object Photos {
             val row = birdnet.row(sci)
             var conf = probs[i].toDouble()
             if (meta != null && row != null) conf *= (1 - s.locationInfluence) + s.locationInfluence * meta[row]
-            Candidate(row ?: -1, if (row != null) Labels.binomial(sci) else sci, row?.let { birdnet.displayName(it) } ?: sci, conf)
+            Candidate(row ?: -1, if (row != null) Labels.binomial(sci) else sci, birdnet.nameOf(sci) ?: sci, conf)
         }.toMutableList()
         val boosted = if (s.fusion) applyAudioPrior(cands, app.history.recentlyHeard(), System.currentTimeMillis() / 1000) else emptySet()
         cands.sortByDescending { it.confidence }
@@ -126,12 +131,15 @@ object Photos {
 
 // --- Wikipedia y xeno-canto --------------------------------------------------------------
 
-private val http = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS).build()
+private val http = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS)
+    .addInterceptor { chain ->
+        chain.proceed(chain.request().newBuilder().header("User-Agent", "BirdDroid/${BuildConfig.VERSION_NAME} (+https://github.com/baltamir1978/BirdDroid)").build())
+    }.build()
 private val json = Json { ignoreUnknownKeys = true }
 
 private suspend fun getJson(url: String): JsonObject? = withContext(Dispatchers.IO) {
     runCatching {
-        http.newCall(Request.Builder().url(url).header("User-Agent", "BirdDroid/0.1 (+https://github.com/baltamir1978/BirdDroid)").build()).execute()
+        http.newCall(Request.Builder().url(url).build()).execute()
             .use { r -> if (r.isSuccessful) json.parseToJsonElement(r.body!!.string()) as? JsonObject else null }
     }.getOrNull()
 }
@@ -141,16 +149,26 @@ data class WikiInfo(val title: String, val extract: String?, val image: String?,
 object Wikipedia {
     private val cache = mutableMapOf<String, WikiInfo?>()
 
-    /** La ficha por el nombre científico, en el idioma del móvil (y si no, en inglés). */
-    suspend fun summary(scientific: String): WikiInfo? = cache.getOrPut(scientific) {
-        val lang = Locale.getDefault().language.takeIf { it in setOf("es", "en", "de", "fr", "it", "pt") } ?: "en"
-        for (l in listOf(lang, "en").distinct()) {
-            val o = getJson("https://$l.wikipedia.org/api/rest_v1/page/summary/" + URLEncoder.encode(scientific.replace(' ', '_'), "UTF-8")) ?: continue
-            val thumb = (o["thumbnail"] as? JsonObject)?.get("source")?.jsonPrimitive?.content
-            val page = ((o["content_urls"] as? JsonObject)?.get("mobile") as? JsonObject)?.get("page")?.jsonPrimitive?.content
-            return@getOrPut WikiInfo(o["title"]?.jsonPrimitive?.content ?: scientific, o["extract"]?.jsonPrimitive?.content, thumb, page)
+    /**
+     * La ficha por el nombre científico, en el idioma del móvil. Lo que falte (sin artículo o sin
+     * foto, frecuente fuera del inglés) se completa con la Wikipedia en inglés.
+     */
+    suspend fun summary(scientific: String): WikiInfo? {
+        if (!Labels.isSpecies(scientific)) return null
+        return cache.getOrPut(scientific) {
+            val lang = Locale.getDefault().language.takeIf { it in setOf("es", "en", "de", "fr", "it", "pt") } ?: "en"
+            val first = fetch(lang, scientific)
+            if (lang == "en" || (first?.image != null && first.extract != null)) return@getOrPut first
+            val english = fetch("en", scientific) ?: return@getOrPut first
+            first?.copy(image = first.image ?: english.image, extract = first.extract ?: english.extract) ?: english
         }
-        null
+    }
+
+    private suspend fun fetch(lang: String, scientific: String): WikiInfo? {
+        val o = getJson("https://$lang.wikipedia.org/api/rest_v1/page/summary/" + URLEncoder.encode(scientific.replace(' ', '_'), "UTF-8")) ?: return null
+        val thumb = (o["thumbnail"] as? JsonObject)?.get("source")?.jsonPrimitive?.content
+        val page = ((o["content_urls"] as? JsonObject)?.get("mobile") as? JsonObject)?.get("page")?.jsonPrimitive?.content
+        return WikiInfo(o["title"]?.jsonPrimitive?.content ?: scientific, o["extract"]?.jsonPrimitive?.content, thumb, page)
     }
 }
 

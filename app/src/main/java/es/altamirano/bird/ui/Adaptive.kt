@@ -62,9 +62,8 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
                             selectedTextColor = colors.primary, indicatorColor = colors.primaryContainer))
                 }
             }
-            // Arriba se encarga cada pestaña (barra de estado); abajo y a la derecha, aquí.
             Box(Modifier.weight(1f).fillMaxHeight()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))) { content() }
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End))) { content() }
         }
     } else {
         Scaffold(containerColor = colors.background, bottomBar = {
@@ -76,7 +75,9 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
                 }
             }
         }) { padding ->
-            Box(Modifier.padding(bottom = padding.calculateBottomPadding()).fillMaxSize()) { content() }
+            // Arriba, la barra de estado: nada se mete debajo, ni el título ni la lista al desplazarla.
+            Box(Modifier.padding(bottom = padding.calculateBottomPadding()).fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))) { content() }
         }
     }
 }

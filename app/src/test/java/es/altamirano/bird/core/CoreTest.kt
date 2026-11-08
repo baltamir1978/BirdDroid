@@ -108,5 +108,22 @@ class SignalTest {
         assertTrue(Signal.isClipped(FloatArray(Signal.WINDOW) { if (it % 100 == 0) 1f else 0f }))
         assertFalse(Signal.isClipped(tone(3000.0, 0.5f)))
     }
-}
 
+    @Test fun `lo completado y los sonidos mandan sobre la etiqueta en ingles`() {
+        val en = listOf("Turdus merula_Common Blackbird", "Bubo lacteus_Verreaux's Eagle-Owl", "Dog_Dog")
+        val es = listOf("Turdus merula_Mirlo común", "Bubo lacteus_Verreaux's Eagle-Owl", "Dog_Dog")
+        val l = Labels(en, es, mapOf("Bubo lacteus" to "Búho lechoso", "Dog" to "Perro"))
+        assertEquals("Mirlo común", l.nameOf("Turdus merula"))
+        assertEquals("Búho lechoso", l.nameOf("Bubo lacteus"))
+        assertEquals("Perro", l.nameOf("Dog"))
+        assertEquals(null, l.nameOf("Pica pica"))
+        // Especies de las fotos que BirdNET no tiene: sólo por lo completado.
+        assertEquals("Cuchara común", Labels(en, es, mapOf("Anas clypeata" to "Cuchara común")).nameOf("Anas clypeata"))
+    }
+
+    @Test fun `los sonidos no son especies`() {
+        assertTrue(Labels.isSpecies("Turdus merula"))
+        assertFalse(Labels.isSpecies("Human vocal"))
+        assertFalse(Labels.isSpecies("Fireworks"))
+    }
+}

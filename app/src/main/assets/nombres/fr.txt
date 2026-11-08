@@ -1,0 +1,113 @@
+Accipiter superciliosus_Épervier nain
+Acrocephalus baeticatus_Rousserolle africaine
+Alouatta pigra_Hurleur Du Guatemala
+Amazilia beryllina_Ariane béryl
+Amazilia violiceps_Ariane à couronne violette
+Ammodramus maritimus_Bruant maritime
+Ammodramus nelsoni_Bruant de Nelson
+Anas americana_Canard d'Amérique
+Anas bahamensis_Canard des Bahamas
+Anas chlorotis_Sarcelle de Nouvelle-Zélande
+Anas clypeata_Canard souchet
+Anas cyanoptera_Sarcelle cannelle
+Anas discors_Sarcelle à ailes bleues
+Anas penelope_Canard siffleur
+Anas querquedula_Sarcelle d'été
+Anas strepera_Canard chipeau
+Anastomus lamelligerus_Bec-ouvert africain
+Anhinga rufa_Anhinga d'Afrique
+Apis mellifera_Abeille européenne
+Ardenna gravis_Puffin majeur
+Ardeotis kori_Outarde kori
+Aythya novaeseelandiae_Fuligule de Nouvelle-Zélande
+Bubo coromandus_Grand-duc de Coromandel
+Bubo lacteus_Grand-duc de Verreaux
+Bubo nipalensis_Grand-duc du Népal
+Bubo sumatranus_Grand-duc bruyant
+Calendulauda alopex_Alouette abyssinienne
+Calyptorhynchus funereus_Cacatoès funèbre
+Calyptorhynchus latirostris_Cacatoès à rectrices blanches
+Canis latrans_coyote
+Canis lupus_Loup commun
+Caprimulgus nigriscapularis_Engoulevent à épaulettes noires
+Caracara cheriway_Caracara du Nord
+Carduelis cannabina_Martin triste
+Cathartes burrovianus_Urubu à tête jaune
+Cerorhinca monocerata_Macareux rhinocéros
+Ciccaba albitarsis_Chouette fasciée
+Ciccaba huhula_Chouette huhul
+Ciccaba nigrolineata_Chouette à lignes noires
+Ciccaba virgata_Chouette mouchetée
+Clytolaema rubricauda_Colibri rubis-émeraude
+Columba larvata_Pigeon à masque blanc
+Corvus caurinus_Corneille d'Alaska
+Cossypha polioptera_Cossyphe à sourcils blancs
+Cyornis hoevelli_Gobemouche à front bleu
+Ephippiorhynchus senegalensis_Jabiru d'Afrique
+Euphonia elegantissima_Organiste à capuchon
+Falcipennis canadensis_Tétras du Canada
+Falco novaeseelandiae_Faucon de Nouvelle-Zélande
+Francolinus pondicerianus_Francolin gris
+Fratercula cirrhata_Macareux huppé
+Gymnogyps californianus_Condor de Californie
+Gyps africanus_Gyps africain
+Hemiphaga novaeseelandiae_Carpophage de Nouvelle-Zélande
+Horornis vulcanius_Bouscarle d'Indonésie
+Hymenolaimus malacorhynchos_Canard bleu
+Larus thayeri_Goéland de Thayer
+Lithobates catesbeianus_Grenouille-taureau
+Lonchura oryzivora_Padda de Java
+Megadyptes antipodes_Manchot antipode
+Megalurus palustris_Mégalure des marais
+Microcarbo melanoleucos_Cormoran pie
+Milvago chimachima_Caracara à tête jaune
+Milvago chimango_Caracara chimango
+Mirafra cantillans_Alouette chanteuse
+Morus serrator_Fou austral
+Mycteria ibis_Tantale africain
+Nestor notabilis_Nestor kéa
+Nyctibius bracteatus_Ibijau roux
+Oceanites oceanicus_Océanite de Wilson
+Otocichla mupinensis_Grive de Verreaux
+Otus madagascariensis_Petit-duc torotoroka
+Pelecanus onocrotalus_Pélican blanc
+Phaeomyias murina_Tyranneau souris
+Phalacrocorax auritus_Cormoran à aigrettes
+Phalacrocorax brasilianus_Cormoran vigua
+Phalacrocorax pelagicus_Cormoran pélagique
+Phalacrocorax penicillatus_Cormoran de Brandt
+Phalacrocorax sulcirostris_Cormoran noir
+Phalacrocorax varius_Cormoran varié
+Phylloscartes difficilis_Tyranneau des Ihering
+Phylloscartes eximius_Tyranneau distingué
+Phylloscartes lanyoni_Tyranneau de Lanyon
+Phylloscartes ophthalmicus_Tyranneau marbré
+Phylloscartes paulista_Tyranneau de Sao Paulo
+Phylloscartes poecilotis_Tyranneau varié
+Phylloscopus occisinensis_Pouillot alpin
+Picoides albolarvatus_Pic à tête blanche
+Picoides nuttallii_Pic de Nuttall
+Picoides pubescens_Pic mineur
+Picoides scalaris_Pic arlequin
+Picoides villosus_Pic chevelu
+Platalea alba_Spatule d'Afrique
+Platalea regia_Spatule royale
+Porphyrio hochstetteri_Takahé du Sud
+Psophocichla litsitsirupa_Grive litsipsirupa
+Pteruthius ripleyi_Allotrie de Ripley
+Regulus calendula_Roitelet à couronne rubis
+Sagittarius serpentarius_Messager sagittaire
+Sakesphorus cristatus_Batara à joues argent
+Sarcoramphus papa_Sarcoramphe roi
+Sericornis citreogularis_Séricorne à gorge jaune
+Serinus mozambicus_Serin à front jaune
+Serpophaga munda_Tyranneau à ventre blanc
+Streptopelia chinensis_Tourterelle tigrine
+Streptopelia senegalensis_Tourterelle maillée
+Struthio camelus_Autruche d'Afrique
+Sula granti_Fou de Grant
+Sylvia communis_Fauvette grisette
+Terathopius ecaudatus_Aigle bateleur
+Threskiornis aethiopicus_Ibis sacré
+Threskiornis moluccus_Ibis à cou noir
+Tumbezia salvini_Pitajo de Tumbes

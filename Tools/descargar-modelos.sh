@@ -4,6 +4,8 @@
 #     (48 kHz, 3 s), sin espectrograma. Del repositorio oficial de BirdNET-Analyzer.
 #   - Las etiquetas de BirdNET y sus nombres comunes por idioma, y meta_weights.bin (el filtro
 #     por lugar y semana), del repositorio de BirdApp (la app de iOS), para dar lo mismo que iOS.
+#     Lo que esas etiquetas dejan en inglés se completa en app/src/main/assets/nombres/ (sí va en el
+#     repositorio; se regenera con Tools/completar-nombres.py).
 #   - Google AIY Birds V1 (fotos, 964 especies + fondo), de Kaggle.
 # Licencia de BirdNET: CC BY-NC-SA 4.0 (uso personal, nada comercial).
 set -euo pipefail

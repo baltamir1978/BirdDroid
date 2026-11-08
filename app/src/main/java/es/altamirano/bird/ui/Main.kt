@@ -63,6 +63,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -87,6 +88,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -115,11 +119,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -134,6 +140,7 @@ import es.altamirano.bird.Wikipedia
 import es.altamirano.bird.XenoCanto
 import es.altamirano.bird.app
 import es.altamirano.bird.core.Candidate
+import es.altamirano.bird.core.Labels
 import es.altamirano.bird.data.Alternative
 import es.altamirano.bird.data.Detection
 import es.altamirano.bird.core.Signal
@@ -207,7 +214,7 @@ private fun Root(incoming: MutableStateFlow<Uri?>) {
 }
 
 @Composable
-private fun Title(text: String) = Text(text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 28.dp, bottom = 8.dp))
+private fun Title(text: String) = Text(text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
 
 @Composable
 private fun Card(content: @Composable () -> Unit) =
@@ -252,7 +259,7 @@ private fun ListenScreen(onOpen: (Detection) -> Unit) {
             }
             if (tiebreak) item { Tiebreak(latest!!) }
             if (history.isNotEmpty()) item { Text(stringResource(R.string.recent), fontWeight = FontWeight.SemiBold) }
-            items(history.take(5), key = { it.id }) { d -> HistoryRow(d) { onOpen(d) } }
+            items(history.take(5), key = { it.id }) { d -> SwipeToDelete(d, Modifier.animateItem()) { HistoryRow(d) { onOpen(d) } } }
         }
         val color by animateColorAsState(if (state.listening) Color(0xFFFF3B30) else Green, label = "botón")
         Box(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 24.dp), contentAlignment = Alignment.Center) {
@@ -322,7 +329,7 @@ private fun CandidateRow(c: Candidate, top: Boolean) {
     Row(Modifier.fillMaxWidth().padding(16.dp, 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(c.name, fontWeight = if (top) FontWeight.Bold else null, fontSize = if (top) 18.sp else 15.sp)
-            Text(c.scientific, fontStyle = FontStyle.Italic, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Scientific(c.scientific)
         }
         Text(pct(c.confidence), fontWeight = FontWeight.SemiBold, color = if (top) Green else MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -342,7 +349,7 @@ private fun Tiebreak(d: Detection) {
                     Thumb(a.scientific, 40)
                     Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
                         Text(a.name, fontWeight = if (current) FontWeight.SemiBold else null)
-                        Text(a.scientific, fontStyle = FontStyle.Italic, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Scientific(a.scientific, 11.sp)
                     }
                     Text(pct(a.confidence), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Icon(if (current) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked, null,
@@ -357,9 +364,18 @@ private fun Tiebreak(d: Detection) {
 private fun Thumb(scientific: String, size: Int) {
     var info by remember(scientific) { mutableStateOf<WikiInfo?>(null) }
     LaunchedEffect(scientific) { info = Wikipedia.summary(scientific) }
-    Box(Modifier.size(size.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primaryContainer)) {
+    Box(Modifier.size(size.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+        // Debajo, lo que se ve mientras carga o si no hay foto (como en iOS).
+        if (Labels.isSpecies(scientific)) Icon(painterResource(R.drawable.ic_bird), null, Modifier.size((size * 0.55f).dp), tint = Green)
+        else Icon(Icons.Filled.GraphicEq, null, Modifier.size((size * 0.55f).dp), tint = Green)
         info?.image?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
     }
+}
+
+/** El nombre científico; los sonidos (perro, sirena…) no tienen. */
+@Composable
+private fun Scientific(name: String, fontSize: TextUnit = 12.sp) {
+    if (Labels.isSpecies(name)) Text(name, fontStyle = FontStyle.Italic, fontSize = fontSize, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 // --- Foto ----------------------------------------------------------------------------------
@@ -468,9 +484,25 @@ private fun HistoryScreen(onOpen: (Detection) -> Unit) {
         byDay.forEach { (day, list) ->
             item { Text(if (day == LocalDate.now()) stringResource(R.string.today) else day.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
                 fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp)) }
-            items(list, key = { it.id }) { d -> HistoryRow(d) { onOpen(d) } }
+            items(list, key = { it.id }) { d -> SwipeToDelete(d, Modifier.animateItem()) { HistoryRow(d) { onOpen(d) } } }
         }
     }
+}
+
+/** Deslizar a la izquierda borra la entrada, como en la lista de iOS. */
+@Composable
+private fun SwipeToDelete(d: Detection, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val app = LocalContext.current.app
+    val state = rememberSwipeToDismissBoxState(
+        confirmValueChange = { v -> if (v == SwipeToDismissBoxValue.EndToStart) { app.history.remove(d); true } else false },
+        positionalThreshold = { it * 0.4f },
+    )
+    SwipeToDismissBox(state, modifier = modifier, enableDismissFromStartToEnd = false, backgroundContent = {
+        if (state.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+            Box(Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.error).padding(end = 20.dp),
+                contentAlignment = Alignment.CenterEnd) { Icon(Icons.Filled.Delete, stringResource(R.string.delete), tint = MaterialTheme.colorScheme.onError) }
+        }
+    }) { content() }
 }
 
 @Composable
@@ -480,7 +512,7 @@ private fun HistoryRow(d: Detection, onClick: () -> Unit) {
             Thumb(d.scientific, 48)
             Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
                 Text(d.name, fontWeight = FontWeight.SemiBold)
-                Text(d.scientific, fontStyle = FontStyle.Italic, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Scientific(d.scientific)
             }
             Column(horizontalAlignment = Alignment.End) {
                 Icon(if (d.photo) Icons.Filled.CameraAlt else Icons.Filled.Mic, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -513,11 +545,11 @@ private fun DetailScreen(start: Detection, onBack: () -> Unit) {
         LazyColumn(Modifier.padding(p).fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             item { info?.image?.let { AsyncImage(it, null, Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(14.dp)), contentScale = ContentScale.Crop) } }
             item {
-                Text(d.scientific, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Scientific(d.scientific, TextUnit.Unspecified)
                 Text("${pct(d.confidence)} · " + Instant.ofEpochMilli(d.at).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)),
                     fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            item {
+            if (Labels.isSpecies(d.scientific)) item {
                 OutlinedButton(onClick = {
                     if (player != null) { player?.release(); player = null; return@OutlinedButton }
                     scope.launch {
@@ -531,7 +563,7 @@ private fun DetailScreen(start: Detection, onBack: () -> Unit) {
             }
             if (d.needsTiebreak) item { Tiebreak(d) }
             info?.extract?.let { item { Text(it) } }
-            item { Text("Wikipedia (CC BY-SA)", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            if (info != null) item { Text("Wikipedia (CC BY-SA)", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
     }
 }

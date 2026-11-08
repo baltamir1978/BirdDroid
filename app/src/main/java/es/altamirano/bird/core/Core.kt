@@ -11,7 +11,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /** Las 6.522 especies de BirdNET: «Científico_Común» por fila; la fila es la clase del modelo. */
-class Labels(lines: List<String>, localized: List<String>?) {
+class Labels(lines: List<String>, localized: List<String>?, private val extra: Map<String, String> = emptyMap()) {
     val scientific: List<String>
     val common: List<String>
     /** Nombres en el idioma del móvil, sólo si el fichero casa fila a fila. */
@@ -28,9 +28,19 @@ class Labels(lines: List<String>, localized: List<String>?) {
 
     val size get() = scientific.size
     fun row(scientificName: String): Int? = index[scientificName.lowercase()] ?: index[binomial(scientificName).lowercase()]
-    fun displayName(i: Int): String = localizedCommon?.getOrNull(i)?.takeIf { it.isNotBlank() && !it.equals(scientific[i], true) } ?: common[i]
+    fun displayName(i: Int): String = extra[scientific[i]]
+        ?: localizedCommon?.getOrNull(i)?.takeIf { it.isNotBlank() && !it.equals(scientific[i], true) } ?: common[i]
+
+    /** El nombre en el idioma actual, o null si no se conoce (especies de fotos que BirdNET no tiene). */
+    fun nameOf(scientificName: String): String? = row(scientificName)?.let(::displayName) ?: extra[binomial(scientificName)]
 
     companion object {
+        /** Las clases de BirdNET que son sonidos y no especies: no tienen ficha, foto ni canto. */
+        val NON_SPECIES = setOf("Dog", "Engine", "Environmental", "Fireworks", "Gun", "Human non-vocal", "Human vocal",
+            "Human whistle", "Noise", "Power tools", "Siren")
+
+        fun isSpecies(scientificName: String) = scientificName !in NON_SPECIES
+
         /** «Anas platyrhynchos diazi» → «Anas platyrhynchos» (BirdNET no tiene subespecies). */
         fun binomial(s: String) = s.trim().split(Regex("\\s+")).take(2).joinToString(" ")
     }

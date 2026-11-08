@@ -3,6 +3,7 @@ package es.altamirano.bird.data
 import android.content.Context
 import android.graphics.Bitmap
 import es.altamirano.bird.BuildConfig
+import es.altamirano.bird.R
 import es.altamirano.bird.core.Candidate
 import es.altamirano.bird.core.FUSION_WINDOW_S
 import es.altamirano.bird.core.Labels
@@ -54,6 +55,9 @@ data class Detection(
         return copy(scientific = a.scientific, name = a.name, confidence = a.confidence, imageUrl = a.imageUrl,
             alternatives = rest.sortedByDescending { it.confidence })
     }
+
+    fun localized(l: Labels) = copy(name = l.nameOf(scientific) ?: name,
+        alternatives = alternatives.map { it.copy(name = l.nameOf(it.scientific) ?: it.name) })
 }
 
 /** El ganador, con los que quedaron lo bastante cerca como para preguntar (`topCarryingCloseCalls`). */
@@ -67,9 +71,11 @@ fun List<Candidate>.toDetection(lat: Double?, lon: Double?, photo: Boolean): Det
  * El historial. Mientras se sigue oyendo la misma especie, no se apunta una vez por ventana de
  * 0,8 s: una sola entrada cada 10 minutos, que guarda la confianza más alta.
  */
-class History(context: Context) {
+class History(context: Context, labels: () -> Labels) {
     private val file = File(context.filesDir, "historial.json")
-    private val _items = MutableStateFlow(runCatching { json.decodeFromString(ListSerializer(Detection.serializer()), file.readText()) }.getOrDefault(emptyList()))
+    // Los nombres se guardan al detectar: se rehacen al cargar, por las traducciones nuevas o si cambia el idioma.
+    private val _items = MutableStateFlow(runCatching { json.decodeFromString(ListSerializer(Detection.serializer()), file.readText()) }.getOrDefault(emptyList())
+        .let { saved -> if (saved.isEmpty()) saved else labels().let { l -> saved.map { it.localized(l) } } })
     val items: StateFlow<List<Detection>> = _items.asStateFlow()
 
     fun record(d: Detection): Detection {
@@ -127,6 +133,14 @@ class Prefs(context: Context) {
         set(v) { p.edit().putInt("fondo_min", v).apply() }
 }
 
+/** Los sonidos que no son especies: en las etiquetas de BirdNET vienen en inglés en casi todos los idiomas. */
+private val SOUNDS = mapOf(
+    "Dog" to R.string.sound_dog, "Engine" to R.string.sound_engine, "Environmental" to R.string.sound_environmental,
+    "Fireworks" to R.string.sound_fireworks, "Gun" to R.string.sound_gun, "Human non-vocal" to R.string.sound_human,
+    "Human vocal" to R.string.sound_voice, "Human whistle" to R.string.sound_whistle, "Noise" to R.string.sound_noise,
+    "Power tools" to R.string.sound_tools, "Siren" to R.string.sound_siren,
+)
+
 /**
  * Los modelos, con LiteRT **empaquetado en la app** (no el de Google Play Services: GrapheneOS).
  * BirdNET completo recibe el audio tal cual (48 kHz, 3 s): no hace falta el espectrograma de iOS.
@@ -139,7 +153,11 @@ class Models(private val context: Context) {
     val labels: Labels by lazy {
         val lang = Locale.getDefault().language
         val file = when (lang) { "es", "de", "fr", "it" -> "labels_$lang.txt"; "pt" -> "labels_pt_PT.txt"; else -> null }
-        Labels(read("labels.txt"), file?.let { runCatching { read(it) }.getOrNull() })
+        // Lo que las etiquetas oficiales dejan en inglés (Tools/completar-nombres.py) y los sonidos.
+        val completed = if (file == null) emptyMap() else runCatching {
+            context.assets.open("nombres/$lang.txt").bufferedReader().readLines().filter { '_' in it }.associate { it.substringBefore('_') to it.substringAfter('_') }
+        }.getOrDefault(emptyMap())
+        Labels(read("labels.txt"), file?.let { runCatching { read(it) }.getOrNull() }, completed + SOUNDS.mapValues { context.getString(it.value) })
     }
     private fun read(name: String) = context.assets.open("models/$name").bufferedReader().readLines()
 
