@@ -6,6 +6,8 @@ la carpeta de proyectos; aquí va lo propio de esta.
 
 ## Estado (8-nov-2026)
 
+**0.3.3 (8-nov-2026):** las filas de «Últimas» y del historial muestran fecha y hora, no sólo la hora.
+
 **0.3.2 (8-nov-2026): imágenes y traducciones.** Coil usa ya el cliente con User-Agent propio: `thumb.wikimedia.org` da 403 al de serie de OkHttp, y por eso no salía ninguna foto. Los 11 sonidos de BirdNET (`Labels.NON_SPECIES`: perro, motor, sirena…) se traducen en `res` y no tienen nombre científico, ficha ni canto. Lo que las etiquetas oficiales dejan en inglés (el italiano, casi todo) se completa desde Wikidata en `assets/nombres/<idioma>.txt`, que sí va en el repositorio y sale de `Tools/completar-nombres.py`; en español quedan 80 en inglés, casi todos grillos y ranas de Norteamérica sin nombre común. Los nombres del historial se rehacen al cargar. La interfaz está también en de, fr, it y pt. La barra de estado la reserva `AdaptiveNavigation`, y las listas se borran deslizando a la izquierda. Sin probar en el móvil.
 
 **0.3.1 (6-nov-2026): modo escritorio** — en ventana ancha (modo escritorio, tableta) el contenido se centra a 720 dp con el margen como `contentPadding` (la rueda del ratón desplaza también sobre él), y la actividad no se recrea al redimensionar (`configChanges`). Piezas en `ui/Adaptive.kt`; sin probar en modo escritorio de verdad. En ventana ancha la barra inferior pasa a riel a la izquierda (`AdaptiveNavigation`). APK en `~/Documentos/BirdDroid-0.3.1.apk`.

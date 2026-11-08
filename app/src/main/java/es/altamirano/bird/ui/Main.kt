@@ -5,6 +5,7 @@ package es.altamirano.bird.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.text.format.DateFormat
 import android.widget.Toast
 import android.content.pm.PackageManager
 import android.graphics.RectF
@@ -154,6 +155,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.Locale
 import kotlin.math.roundToInt
 
 /** El verde de la app (el mismo de BirdApp, RadioApp y Tiempo ES). */
@@ -505,6 +507,14 @@ private fun SwipeToDelete(d: Detection, modifier: Modifier = Modifier, content: 
     }) { content() }
 }
 
+/** «8 nov, 14:32» en el idioma del móvil; el año sólo si no es el actual. */
+private fun dateAndTime(at: Long): String {
+    val time = Instant.ofEpochMilli(at).atZone(ZoneId.systemDefault())
+    val locale = Locale.getDefault()
+    val skeleton = if (time.year == LocalDate.now().year) "dMMMHHmm" else "yMMMdHHmm"
+    return time.format(DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale))
+}
+
 @Composable
 private fun HistoryRow(d: Detection, onClick: () -> Unit) {
     Card {
@@ -516,7 +526,7 @@ private fun HistoryRow(d: Detection, onClick: () -> Unit) {
             }
             Column(horizontalAlignment = Alignment.End) {
                 Icon(if (d.photo) Icons.Filled.CameraAlt else Icons.Filled.Mic, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(Instant.ofEpochMilli(d.at).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm")), fontSize = 12.sp)
+                Text(dateAndTime(d.at), fontSize = 12.sp)
                 Text(pct(d.confidence), fontSize = 12.sp, color = Green)
             }
         }
