@@ -1,11 +1,11 @@
 package es.altamirano.bird.data
 
 import android.content.Context
-import android.graphics.Bitmap
 import es.altamirano.bird.BuildConfig
 import es.altamirano.bird.R
 import es.altamirano.bird.core.Candidate
 import es.altamirano.bird.core.FUSION_WINDOW_S
+import es.altamirano.bird.core.Framing
 import es.altamirano.bird.core.Labels
 import es.altamirano.bird.core.LocationFilter
 import es.altamirano.bird.core.Settings
@@ -176,7 +176,7 @@ class Models(private val context: Context) {
     // --- Fotos: Google AIY Birds V1 (224×224 RGB, cuantizado) ------------------------------
 
     private val aiyBuffer: MappedByteBuffer by lazy { map("aiy_birds_v1.tflite") }
-    private val aiy: Interpreter by lazy { Interpreter(aiyBuffer) }
+    private val aiy: Interpreter by lazy { Interpreter(aiyBuffer, Interpreter.Options().setNumThreads(4)) }
 
     /** Las 965 etiquetas (nombres científicos) van dentro del propio .tflite, en un zip al final. */
     val aiyLabels: List<String> by lazy {
@@ -192,17 +192,49 @@ class Models(private val context: Context) {
         }
     }
 
-    /** Probabilidad (0–1) de cada clase para una imagen ya recortada. */
+    /** La clase «no hay pájaro»: «None» en el .tflite de Kaggle, «__background__» en la conversión de iOS. */
+    val aiyBackground: Int by lazy { aiyLabels.indexOfFirst { it == "None" || it == "__background__" } }
+
+    private val aiyInput = ByteBuffer.allocateDirect(Framing.MODEL_SIDE * Framing.MODEL_SIDE * 3).order(ByteOrder.nativeOrder())
+    private val aiyOutput = Array(1) { ByteArray(965) }
+
+    /** Probabilidad (0–1) de cada clase para una imagen ARGB de 224×224. */
     @Synchronized
-    fun classifyPhoto(bmp: Bitmap): FloatArray {
-        val scaled = Bitmap.createScaledBitmap(bmp, 224, 224, true)
-        val input = ByteBuffer.allocateDirect(224 * 224 * 3).order(ByteOrder.nativeOrder())
-        val px = IntArray(224 * 224); scaled.getPixels(px, 0, 224, 0, 0, 224, 224)
-        for (c in px) { input.put((c shr 16 and 0xFF).toByte()); input.put((c shr 8 and 0xFF).toByte()); input.put((c and 0xFF).toByte()) }
-        input.rewind()
-        val out = Array(1) { ByteArray(965) }
-        aiy.run(input, out)
+    fun classifyPhoto(px: IntArray): FloatArray {
+        aiyInput.rewind()
+        for (c in px) { aiyInput.put((c shr 16 and 0xFF).toByte()); aiyInput.put((c shr 8 and 0xFF).toByte()); aiyInput.put((c and 0xFF).toByte()) }
+        aiyInput.rewind()
+        aiy.run(aiyInput, aiyOutput)
         // Salida cuantizada: escala 1/256, sin desplazamiento.
-        return FloatArray(965) { (out[0][it].toInt() and 0xFF) / 256f }
+        return FloatArray(965) { (aiyOutput[0][it].toInt() and 0xFF) / 256f }
     }
+
+    // --- Recorte con un toque: MediaPipe Magic Touch, con LiteRT tal cual ------------------
+
+    private val magicTouch: Interpreter by lazy { Interpreter(map("magic_touch.tflite"), Interpreter.Options().setNumThreads(4)) }
+    private val magicInput = ByteBuffer.allocateDirect(Framing.MASK_SIDE * Framing.MASK_SIDE * 4 * 4).order(ByteOrder.nativeOrder())
+    private val magicOutput = ByteBuffer.allocateDirect(Framing.MASK_SIDE * Framing.MASK_SIDE * 4).order(ByteOrder.nativeOrder())
+
+    /**
+     * La máscara (512×512, 0–1) del objeto en el punto (0–1) de una imagen ARGB de 512×512.
+     * Entrada: RGB en 0–1 y, como cuarto canal, un disco blanco donde se tocó.
+     */
+    @Synchronized
+    fun segment(px: IntArray, tapX: Float, tapY: Float): FloatArray {
+        val side = Framing.MASK_SIDE
+        val cx = tapX * side; val cy = tapY * side
+        magicInput.rewind()
+        for (y in 0 until side) for (x in 0 until side) {
+            val c = px[y * side + x]
+            magicInput.putFloat((c shr 16 and 0xFF) / 255f); magicInput.putFloat((c shr 8 and 0xFF) / 255f); magicInput.putFloat((c and 0xFF) / 255f)
+            val dx = x - cx; val dy = y - cy
+            magicInput.putFloat(if (dx * dx + dy * dy <= TAP_RADIUS * TAP_RADIUS) 1f else 0f)
+        }
+        magicInput.rewind(); magicOutput.rewind()
+        magicTouch.run(magicInput, magicOutput)
+        magicOutput.rewind()
+        return FloatArray(side * side).also { magicOutput.asFloatBuffer().get(it) }
+    }
+
+    private companion object { const val TAP_RADIUS = 6f }
 }

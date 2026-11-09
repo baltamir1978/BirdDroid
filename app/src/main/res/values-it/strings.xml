@@ -15,10 +15,7 @@
     <string name="gallery">Galleria</string>
     <string name="camera">Fotocamera</string>
     <string name="identify">Identifica</string>
-    <string name="auto_crop">Ritaglio automatico</string>
-    <string name="framing_hint">Trascina un riquadro sull’uccello o mantieni il ritaglio centrale.</string>
     <string name="no_bird">Non sembra esserci un uccello. Prova a inquadrarlo.</string>
-    <string name="analysed">Cosa è stato analizzato</string>
     <string name="heard_recently">Sentito di recente: conta a suo favore.</string>
     <string name="history_empty">Gli uccelli identificati appariranno qui.</string>
     <string name="today">Oggi</string>
@@ -37,7 +34,7 @@
     <string name="background_minutes">Ascolto in background</string>
     <string name="xc_key">Chiave API</string>
     <string name="save">Salva</string>
-    <string name="credits">BirdNET (Cornell Lab e TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · Wikipedia · xeno-canto</string>
+    <string name="credits">BirdNET (Cornell Lab e TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · MediaPipe Magic Touch · Wikipedia · xeno-canto</string>
     <string name="share_audio">Condividi gli ultimi 15 s del microfono</string>
     <string name="share_audio_hint">In WAV, così come arriva al modello: utile per controllare cosa sente il telefono.</string>
     <string name="share_audio_empty">Ancora nessun audio: ascolta prima per un po’.</string>
@@ -53,4 +50,17 @@
     <string name="sound_noise">Rumore</string>
     <string name="sound_tools">Utensili elettrici</string>
     <string name="sound_siren">Sirena</string>
+    <string name="frame_title">Inquadra l’uccello</string>
+    <string name="cancel">Annulla</string>
+    <string name="looking_subject">Ricerca del soggetto…</string>
+    <string name="hint_tap">Tocca l’uccello o trascina un riquadro attorno</string>
+    <string name="hint_adjust">Trascina per spostare, gli angoli per ridimensionare</string>
+    <string name="whole_photo">Foto intera</string>
+    <string name="selected_area">Area selezionata</string>
+    <string name="analysed_area">Area analizzata</string>
+    <string name="adjust">Modifica</string>
+    <string name="analysing_photo">Analisi della foto…</string>
+    <string name="photo_empty_title">Identifica un uccello da una foto</string>
+    <string name="photo_empty_hint">Funziona meglio se l’uccello occupa buona parte dell’inquadratura.</string>
+    <string name="photo_read_error">Impossibile leggere la foto</string>
 </resources>

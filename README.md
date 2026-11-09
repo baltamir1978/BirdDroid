@@ -12,7 +12,7 @@ app.
 
 - **Por el canto** con BirdNET (GLOBAL 6K V2.4), en directo y también con la app minimizada.
   Mientras escucha, un pájaro en el centro se llena de verde con el volumen, como en BirdApp.
-- **Por foto** con Google AIY Birds V1, con las especies pasadas a la taxonomía de BirdNET.
+- **Por foto** con Google AIY Birds V1, con las especies pasadas a la taxonomía de BirdNET. La app busca el pájaro en la foto; con un toque se recorta por su silueta (MediaPipe Magic Touch) y también se puede arrastrar un recuadro.
 - **Filtro por lugar y temporada**, con el sitio y la fecha **del EXIF** en las fotos.
 - **Fusión**: al identificar una foto, se prefieren las especies oídas hace poco.
 - **Desempate**: si el segundo candidato queda cerca del primero, pregunta.
@@ -24,7 +24,7 @@ app.
 
 ```sh
 Tools/instalar-entorno.sh       # JDK 17, Android SDK y Gradle en ~/Android, sin sudo
-Tools/descargar-modelos.sh      # ~70 MB de modelos (no están en el repositorio)
+Tools/descargar-modelos.sh      # ~75 MB de modelos (no están en el repositorio)
 ./gradlew testDebugUnitTest assembleRelease
 ```
 

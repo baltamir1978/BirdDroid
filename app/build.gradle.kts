@@ -21,8 +21,8 @@ android {
         applicationId = "es.altamirano.bird"
         minSdk = 31          // Android 12
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.3.3"
+        versionCode = 7
+        versionName = "0.4"
         // Los móviles de hoy (y los Pixel de GrapheneOS) son arm64: el motor de LiteRT sólo para ese.
         ndk { abiFilters += "arm64-v8a" }
         buildConfigField("String", "XENO_CANTO_KEY", localString("xenocanto.apiKey"))
@@ -87,7 +87,7 @@ dependencies {
 val checkModels by tasks.registering {
     doLast {
         val dir = file("src/main/assets/models")
-        val needed = listOf("birdnet.tflite", "aiy_birds_v1.tflite", "meta_weights.bin", "labels.txt")
+        val needed = listOf("birdnet.tflite", "aiy_birds_v1.tflite", "magic_touch.tflite", "meta_weights.bin", "labels.txt")
         val missing = needed.filterNot { File(dir, it).exists() }
         if (missing.isNotEmpty()) throw GradleException("Faltan los modelos ($missing): ejecuta Tools/descargar-modelos.sh")
     }

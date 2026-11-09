@@ -16,10 +16,7 @@
     <string name="gallery">Galería</string>
     <string name="camera">Cámara</string>
     <string name="identify">Identificar</string>
-    <string name="auto_crop">Recorte automático</string>
-    <string name="framing_hint">Arrastra un recuadro sobre el pájaro, o deja el recorte central.</string>
     <string name="no_bird">No parece que haya un pájaro. Prueba a encuadrarlo.</string>
-    <string name="analysed">Lo que se ha analizado</string>
     <string name="heard_recently">Se ha oído cantar hace poco: cuenta a su favor.</string>
     <string name="history_empty">Las aves que identifiques aparecerán aquí.</string>
     <string name="today">Hoy</string>
@@ -38,7 +35,7 @@
     <string name="background_minutes">Escucha en segundo plano</string>
     <string name="xc_key">Clave de la API</string>
     <string name="save">Guardar</string>
-    <string name="credits">BirdNET (Cornell Lab y TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · Wikipedia · xeno-canto</string>
+    <string name="credits">BirdNET (Cornell Lab y TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · MediaPipe Magic Touch · Wikipedia · xeno-canto</string>
     <string name="share_audio">Compartir los últimos 15 s del micrófono</string>
     <string name="share_audio_hint">En WAV, tal cual le llega al modelo: sirve para comprobar qué oye el móvil.</string>
     <string name="share_audio_empty">Todavía no hay audio: escucha un rato primero.</string>
@@ -54,4 +51,17 @@
     <string name="sound_noise">Ruido</string>
     <string name="sound_tools">Herramientas eléctricas</string>
     <string name="sound_siren">Sirena</string>
+    <string name="frame_title">Encuadra el ave</string>
+    <string name="cancel">Cancelar</string>
+    <string name="looking_subject">Buscando el sujeto…</string>
+    <string name="hint_tap">Toca el ave o arrastra un recuadro alrededor</string>
+    <string name="hint_adjust">Arrastra para mover; las esquinas, para redimensionar</string>
+    <string name="whole_photo">Foto completa</string>
+    <string name="selected_area">Zona seleccionada</string>
+    <string name="analysed_area">Zona analizada</string>
+    <string name="adjust">Ajustar</string>
+    <string name="analysing_photo">Analizando la foto…</string>
+    <string name="photo_empty_title">Identifica un ave a partir de una foto</string>
+    <string name="photo_empty_hint">Funciona mejor si el ave ocupa buena parte del encuadre.</string>
+    <string name="photo_read_error">No se ha podido leer la foto</string>
 </resources>

@@ -1,6 +1,5 @@
 package es.altamirano.bird.listen
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,9 +8,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
-import android.location.LocationManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -19,6 +16,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import es.altamirano.bird.R
 import es.altamirano.bird.app
+import es.altamirano.bird.lastLocation
 import es.altamirano.bird.core.Candidate
 import es.altamirano.bird.core.Scorer
 import es.altamirano.bird.core.Signal
@@ -210,15 +208,6 @@ class ListenService : Service() {
     }
 
     private fun idle() = ListenBus.state.update { it.copy(analyzing = false, thinking = null) }
-
-    /** Con `LocationManager`, no el de Google Play (GrapheneOS). Lo último conocido basta. */
-    @SuppressLint("MissingPermission")
-    private fun lastLocation(): Pair<Double, Double>? {
-        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return null
-        val lm = getSystemService(LocationManager::class.java)
-        return listOf(LocationManager.FUSED_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
-            .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }.maxByOrNull { it.time }?.let { it.latitude to it.longitude }
-    }
 
     companion object {
         private const val CHANNEL = "escucha"

@@ -8,7 +8,6 @@ import android.content.Intent
 import android.text.format.DateFormat
 import android.widget.Toast
 import android.content.pm.PackageManager
-import android.graphics.RectF
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
@@ -20,12 +19,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
-import kotlin.math.sqrt
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
@@ -48,13 +44,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -67,23 +61,15 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -102,39 +88,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import es.altamirano.bird.PhotoInfo
-import es.altamirano.bird.PhotoResult
-import es.altamirano.bird.Photos
 import es.altamirano.bird.R
 import es.altamirano.bird.WikiInfo
 import es.altamirano.bird.Wikipedia
@@ -198,7 +176,12 @@ class MainActivity : ComponentActivity() {
 private fun Root(incoming: MutableStateFlow<Uri?>) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     val shared by incoming.collectAsStateWithLifecycle()
-    LaunchedEffect(shared) { if (shared != null) tab = 1 }
+    val context = LocalContext.current
+    val rootScope = rememberCoroutineScope()
+    // Aquí arriba: la foto no se pierde al cambiar de pestaña o abrir una ficha.
+    val photos = remember { PhotoSession(context.applicationContext, rootScope) }
+    LaunchedEffect(shared) { shared?.let { tab = 1; photos.open(it); incoming.value = null } }
+    photos.framing?.let { f -> BackHandler { photos.cancel() }; FramingScreen(f, photos); return }
     var detail by remember { mutableStateOf<Detection?>(null) }
     detail?.let { d -> BackHandler { detail = null }; DetailScreen(d) { detail = null }; return }
     val items = listOf(Triple(R.string.tab_listen, Icons.Filled.Mic, 0), Triple(R.string.tab_photo, Icons.Filled.CameraAlt, 1),
@@ -208,7 +191,7 @@ private fun Root(incoming: MutableStateFlow<Uri?>) {
     AdaptiveNavigation(items) {
         when (tab) {
             0 -> ListenScreen { detail = it }
-            1 -> PhotoScreen(shared) { incoming.value = null }
+            1 -> PhotoScreen(photos)
             2 -> HistoryScreen { detail = it }
             else -> SettingsScreen()
         }
@@ -216,10 +199,10 @@ private fun Root(incoming: MutableStateFlow<Uri?>) {
 }
 
 @Composable
-private fun Title(text: String) = Text(text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
+internal fun Title(text: String) = Text(text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
 
 @Composable
-private fun Card(content: @Composable () -> Unit) =
+internal fun Card(content: @Composable () -> Unit) =
     Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceContainer)) { content() }
 
 private fun pct(c: Double) = "${(c * 100).roundToInt()} %"
@@ -327,7 +310,7 @@ private fun BirdWave(level: Float, listening: Boolean, modifier: Modifier = Modi
 }
 
 @Composable
-private fun CandidateRow(c: Candidate, top: Boolean) {
+internal fun CandidateRow(c: Candidate, top: Boolean) {
     Row(Modifier.fillMaxWidth().padding(16.dp, 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(c.name, fontWeight = if (top) FontWeight.Bold else null, fontSize = if (top) 18.sp else 15.sp)
@@ -339,7 +322,7 @@ private fun CandidateRow(c: Candidate, top: Boolean) {
 
 /** «Estas especies se parecen: ¿cuál era?» Sólo cuando el segundo queda cerca del primero. */
 @Composable
-private fun Tiebreak(d: Detection) {
+internal fun Tiebreak(d: Detection) {
     val app = LocalContext.current.app
     Card {
         Column(Modifier.padding(12.dp)) {
@@ -378,99 +361,6 @@ private fun Thumb(scientific: String, size: Int) {
 @Composable
 private fun Scientific(name: String, fontSize: TextUnit = 12.sp) {
     if (Labels.isSpecies(name)) Text(name, fontStyle = FontStyle.Italic, fontSize = fontSize, color = MaterialTheme.colorScheme.onSurfaceVariant)
-}
-
-// --- Foto ----------------------------------------------------------------------------------
-
-@Composable
-private fun PhotoScreen(shared: Uri?, onConsumed: () -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var info by remember { mutableStateOf<PhotoInfo?>(null) }
-    var region by remember { mutableStateOf<RectF?>(null) }
-    var result by remember { mutableStateOf<PhotoResult?>(null) }
-    var working by remember { mutableStateOf(false) }
-    fun open(uri: Uri) = scope.launch { working = true; result = null; region = null; info = Photos.load(context, uri); working = false }
-    LaunchedEffect(shared) { shared?.let { open(it); onConsumed() } }
-    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { it?.let(::open) }
-    val askMedia = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { pick.launch(arrayOf("image/*")) }
-    val cameraFile = remember { File(context.cacheDir, "camara/foto.jpg").apply { parentFile?.mkdirs() } }
-    val cameraUri = remember { FileProvider.getUriForFile(context, "${context.packageName}.fotos", cameraFile) }
-    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok -> if (ok) open(cameraUri) }
-
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        item { Title(stringResource(R.string.tab_photo)) }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(onClick = {
-                    // Sin este permiso, la ubicación del EXIF llega borrada.
-                    if (context.checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) pick.launch(arrayOf("image/*"))
-                    else askMedia.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
-                }, colors = ButtonDefaults.buttonColors(containerColor = Green)) { Icon(Icons.Filled.PhotoLibrary, null); Text("  " + stringResource(R.string.gallery)) }
-                OutlinedButton(onClick = { camera.launch(cameraUri) }) { Icon(Icons.Filled.CameraAlt, null); Text("  " + stringResource(R.string.camera)) }
-            }
-        }
-        if (working) item { CircularProgressIndicator(color = Green) }
-        info?.let { inf ->
-            item {
-                Text(stringResource(R.string.framing_hint), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Framing(inf, region) { region = it }
-            }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Button(onClick = { scope.launch { working = true; result = Photos.identify(context, inf, region, null); working = false } },
-                        colors = ButtonDefaults.buttonColors(containerColor = Green)) { Text(stringResource(R.string.identify)) }
-                    if (region != null) TextButton(onClick = { region = null }) { Text(stringResource(R.string.auto_crop)) }
-                }
-            }
-        }
-        when (val r = result) {
-            is PhotoResult.NoBird -> item { Card { Text(stringResource(R.string.no_bird), Modifier.padding(16.dp)) } }
-            is PhotoResult.Found -> {
-                item {
-                    Card {
-                        Column(Modifier.padding(vertical = 6.dp)) {
-                            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Image(r.crop.asImageBitmap(), null, Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)), contentScale = ContentScale.Crop)
-                                Text(stringResource(R.string.analysed), Modifier.padding(start = 12.dp), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            r.candidates.forEachIndexed { i, c -> CandidateRow(c, i == 0) }
-                            if (r.heardBoost) Text(stringResource(R.string.heard_recently), Modifier.padding(16.dp, 6.dp), fontSize = 12.sp, color = Green)
-                        }
-                    }
-                }
-                if (r.detection.needsTiebreak) item { Tiebreak(r.detection) }
-            }
-            null -> {}
-        }
-    }
-}
-
-/** Encuadre a mano: se arrastra un recuadro sobre el pájaro. */
-@Composable
-private fun Framing(info: PhotoInfo, region: RectF?, onRegion: (RectF?) -> Unit) {
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    var start by remember { mutableStateOf<Offset?>(null) }
-    val ratio = info.bitmap.width.toFloat() / info.bitmap.height
-    Box(Modifier.fillMaxWidth().aspectRatio(ratio).clip(RoundedCornerShape(12.dp)).onSizeChanged { size = it }
-        .pointerInput(info) {
-            detectDragGestures(onDragStart = { start = it }, onDragEnd = { start = null }) { change, _ ->
-                val s = start ?: return@detectDragGestures
-                val e = change.position
-                val r = RectF(minOf(s.x, e.x) / size.width, minOf(s.y, e.y) / size.height, maxOf(s.x, e.x) / size.width, maxOf(s.y, e.y) / size.height)
-                if (r.width() > 0.05f && r.height() > 0.05f) onRegion(RectF(r.left.coerceIn(0f, 1f), r.top.coerceIn(0f, 1f), r.right.coerceIn(0f, 1f), r.bottom.coerceIn(0f, 1f)))
-            }
-        }) {
-        Image(info.bitmap.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
-        region?.let { r ->
-            Canvas(Modifier.fillMaxSize()) {
-                drawRect(Color(0x66000000))
-                drawRect(Color.Transparent, Offset(r.left * size.width, r.top * size.height), Size(r.width() * size.width, r.height() * size.height),
-                    blendMode = androidx.compose.ui.graphics.BlendMode.Clear)
-                drawRect(Color.White, Offset(r.left * size.width, r.top * size.height), Size(r.width() * size.width, r.height() * size.height), style = Stroke(3f))
-            }
-        }
-    }
 }
 
 // --- Historial -----------------------------------------------------------------------------

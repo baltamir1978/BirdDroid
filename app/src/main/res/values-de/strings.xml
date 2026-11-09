@@ -15,10 +15,7 @@
     <string name="gallery">Galerie</string>
     <string name="camera">Kamera</string>
     <string name="identify">Bestimmen</string>
-    <string name="auto_crop">Automatischer Zuschnitt</string>
-    <string name="framing_hint">Ziehe einen Rahmen um den Vogel oder behalte den mittigen Zuschnitt.</string>
     <string name="no_bird">Es scheint kein Vogel zu sein. Versuche, ihn einzurahmen.</string>
-    <string name="analysed">Was analysiert wurde</string>
     <string name="heard_recently">Kürzlich gehört: Das spricht dafür.</string>
     <string name="history_empty">Bestimmte Vögel erscheinen hier.</string>
     <string name="today">Heute</string>
@@ -37,7 +34,7 @@
     <string name="background_minutes">Hören im Hintergrund</string>
     <string name="xc_key">API-Schlüssel</string>
     <string name="save">Speichern</string>
-    <string name="credits">BirdNET (Cornell Lab und TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · Wikipedia · xeno-canto</string>
+    <string name="credits">BirdNET (Cornell Lab und TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · MediaPipe Magic Touch · Wikipedia · xeno-canto</string>
     <string name="share_audio">Die letzten 15 s des Mikrofons teilen</string>
     <string name="share_audio_hint">Als WAV, genau so, wie es das Modell erhält: nützlich, um zu prüfen, was das Telefon hört.</string>
     <string name="share_audio_empty">Noch kein Audio: Höre erst eine Weile zu.</string>
@@ -53,4 +50,17 @@
     <string name="sound_noise">Rauschen</string>
     <string name="sound_tools">Elektrowerkzeuge</string>
     <string name="sound_siren">Sirene</string>
+    <string name="frame_title">Vogel einrahmen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="looking_subject">Motiv wird gesucht…</string>
+    <string name="hint_tap">Tippe den Vogel an oder ziehe einen Rahmen darum</string>
+    <string name="hint_adjust">Ziehen zum Verschieben, Ecken zum Ändern der Größe</string>
+    <string name="whole_photo">Ganzes Foto</string>
+    <string name="selected_area">Ausgewählter Bereich</string>
+    <string name="analysed_area">Analysierter Bereich</string>
+    <string name="adjust">Anpassen</string>
+    <string name="analysing_photo">Foto wird analysiert…</string>
+    <string name="photo_empty_title">Bestimme einen Vogel anhand eines Fotos</string>
+    <string name="photo_empty_hint">Funktioniert am besten, wenn der Vogel einen großen Teil des Bildes ausfüllt.</string>
+    <string name="photo_read_error">Das Foto konnte nicht gelesen werden</string>
 </resources>

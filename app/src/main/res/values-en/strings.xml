@@ -15,10 +15,7 @@
     <string name="gallery">Gallery</string>
     <string name="camera">Camera</string>
     <string name="identify">Identify</string>
-    <string name="auto_crop">Automatic crop</string>
-    <string name="framing_hint">Drag a box over the bird, or keep the centre crop.</string>
     <string name="no_bird">It doesn’t look like there’s a bird. Try framing it.</string>
-    <string name="analysed">What was analysed</string>
     <string name="heard_recently">Heard singing a moment ago: that counts in its favour.</string>
     <string name="history_empty">Birds you identify will show up here.</string>
     <string name="today">Today</string>
@@ -37,7 +34,7 @@
     <string name="background_minutes">Background listening</string>
     <string name="xc_key">API key</string>
     <string name="save">Save</string>
-    <string name="credits">BirdNET (Cornell Lab and TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · Wikipedia · xeno-canto</string>
+    <string name="credits">BirdNET (Cornell Lab and TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · MediaPipe Magic Touch · Wikipedia · xeno-canto</string>
     <string name="share_audio">Share the last 15 s from the microphone</string>
     <string name="share_audio_hint">As WAV, exactly what the model gets: useful to check what the phone hears.</string>
     <string name="share_audio_empty">No audio yet: listen for a while first.</string>
@@ -53,4 +50,17 @@
     <string name="sound_noise">Noise</string>
     <string name="sound_tools">Power tools</string>
     <string name="sound_siren">Siren</string>
+    <string name="frame_title">Frame the bird</string>
+    <string name="cancel">Cancel</string>
+    <string name="looking_subject">Looking for the subject…</string>
+    <string name="hint_tap">Tap the bird, or drag a box around it</string>
+    <string name="hint_adjust">Drag to move, corners to resize</string>
+    <string name="whole_photo">Whole photo</string>
+    <string name="selected_area">Selected area</string>
+    <string name="analysed_area">Analysed area</string>
+    <string name="adjust">Adjust</string>
+    <string name="analysing_photo">Analyzing photo…</string>
+    <string name="photo_empty_title">Identify a bird from a photo</string>
+    <string name="photo_empty_hint">Works best when the bird fills a good part of the frame.</string>
+    <string name="photo_read_error">Could not read the photo</string>
 </resources>

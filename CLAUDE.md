@@ -4,7 +4,9 @@ Versión para Android de **BirdApp** (iOS), escrita **desde cero en Kotlin + Jet
 común a las apps de Android (firma, `versionCode`, secretos, distribución) está en el `CLAUDE.md` de
 la carpeta de proyectos; aquí va lo propio de esta.
 
-## Estado (8-nov-2026)
+## Estado (9-nov-2026)
+
+**0.4 (9-nov-2026): la foto, como en iOS.** Toda foto pasa por una pantalla de encuadre (`ui/Photo.kt`, copia de `PhotoFramingView`) con el pájaro ya seleccionado, y el resultado sale bajo una vista previa de 200 dp (antes quedaba por debajo de la foto, fuera de la pantalla). El recuadro salía negro por usar `BlendMode.Clear` sin capa propia: borraba la ventana. El pájaro se busca solo con AIY Birds en ventanas de 5 tamaños (lado corto reducido a 896 px, parando al llegar a 0,9) y luego **Magic Touch** (`magic_touch.tflite`, 6 MB, con LiteRT tal cual: sin MediaPipe ni Google Play) ciñe el recuadro; un toque recorta por la silueta. El recorte ahora es cuadrado y se reduce promediando (`core/Framing.kt`): con `createScaledBitmap` había aliasing. Comprobado en Python con el mismo flujo: 20 de 20 en pájaros de entre el 50 y el 12 % del encuadre pegados sobre un paisaje. **AIY no sabe si hay pájaro**: ve patos en un coche (0,94) y su clase `None` casi nunca gana, así que su nota sólo sirve para localizar; en una foto sin aves preselecciona algo y da una especie al azar (también en iOS). Sin probar en el móvil.
 
 **0.3.3 (8-nov-2026):** las filas de «Últimas» y del historial muestran fecha y hora, no sólo la hora.
 
@@ -39,8 +41,7 @@ especie en 10 min, **desempate** cuando el segundo queda al 65 % o más, fotos (
 arrastrando un recuadro, EXIF (sitio y fecha para el filtro), **fusión audio↔foto** (lo oído en
 10 min sube y se renormaliza), ficha de Wikipedia, canto de xeno-canto (con clave), ajustes.
 
-Falta: **segmentación con un toque** (MediaPipe Interactive Image Segmenter: ahora el encuadre es
-a mano o el cuadrado central), el modelo ibérico de iOS, widgets, accesos directos, y probar en el móvil (sobre todo si la ubicación del EXIF llega
+Falta: el modelo ibérico de iOS, widgets, accesos directos, y probar en el móvil (sobre todo si la ubicación del EXIF llega
 con fotos compartidas desde Google Fotos).
 
 **Los modelos no van en el repositorio** (decidido el 5-nov-2026; el plan era Git LFS, pero aquí
@@ -76,7 +77,7 @@ hace, todo **en el dispositivo**:
 | `MelSpectrogramExtractor` + `filterbank1/2.bin` | Dos caminos: el modelo *classifier only* con el espectrograma calculado en Kotlin (como en iOS), o **el modelo completo oficial de BirdNET**, que recibe el audio tal cual (48 kHz, 3 s) y se ahorra el espectrograma. Probar primero el completo |
 | `meta_weights.bin` (filtro por lugar y semana) | El modelo de metadatos oficial de BirdNET en TFLite |
 | Modelo de fotos en Core ML | Google AIY Birds V1 existe en TFLite (Kaggle) |
-| Segmentación de sujetos de Vision | **No ML Kit**: su segmentación de sujetos se descarga por Google Play Services, que GrapheneOS no tiene. El candidato es **MediaPipe Interactive Image Segmenter**, que recorta el objeto a partir del punto tocado (justo el gesto del original) y lleva el modelo dentro de la app. Comprobar que funciona sin Google Play |
+| Segmentación de sujetos de Vision | **No ML Kit**: su segmentación de sujetos se descarga por Google Play Services, que GrapheneOS no tiene. Se usa **Magic Touch**, el modelo de MediaPipe Interactive Image Segmenter, directamente con LiteRT: RGB en 0–1 más un cuarto canal con un disco blanco donde se tocó |
 | Extensión de compartir `BirdShare` | `intent-filter` con `ACTION_SEND` de `image/*`: mucho más sencillo que en iOS |
 | Escucha en segundo plano | Servicio en primer plano de tipo `microphone`, con notificación fija. **Desde Android 14 sólo se puede arrancar con la app delante** |
 | WidgetKit + notificaciones Darwin | Glance; el botón de escuchar habla con el servicio |

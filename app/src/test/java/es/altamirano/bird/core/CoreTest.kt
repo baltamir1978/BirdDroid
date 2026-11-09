@@ -127,3 +127,71 @@ class SignalTest {
         assertFalse(Labels.isSpecies("Fireworks"))
     }
 }
+
+class FramingTest {
+    @Test fun aRectangleGrowsIntoASquareAroundItsCentre() {
+        assertEquals(Square(300, 200, 400), Framing.square(Box(0.4f, 0.2f, 0.6f, 0.6f), 1000, 1000))
+    }
+
+    @Test fun theSquareStaysInsideThePhoto() {
+        assertEquals(Square(0, 0, 200), Framing.square(Box(0f, 0f, 0.2f, 0.1f), 1000, 1000))
+        assertEquals(Square(800, 800, 200), Framing.square(Box(0.9f, 0.8f, 1f, 1f), 1000, 1000))
+    }
+
+    @Test fun theWholePhotoBecomesTheCentralSquare() {
+        assertEquals(Square(0, 500, 3000), Framing.square(Box(0f, 0f, 1f, 1f), 3000, 4000))
+    }
+
+    @Test fun windowsReachTheEdgesAndGoFromLargeToSmall() {
+        val scales = Framing.scales(900, 1200)
+        assertEquals(listOf(900, 594, 396, 270, 180), scales.map { it.first().side })
+        for (scale in scales) {
+            val side = scale.first().side
+            assertTrue(scale.any { it.x == 900 - side && it.y == 1200 - side })
+            assertTrue(scale.all { it.x >= 0 && it.y >= 0 && it.x + side <= 900 && it.y + side <= 1200 })
+        }
+    }
+
+    @Test fun reducingAveragesInsteadOfSkippingPixels() {
+        // Tablero blanco y negro de 1 px: el aliasing lo dejaría blanco o negro; bien reducido es gris.
+        val w = 448
+        val board = IntArray(w * w) { i -> if ((i % w + i / w) % 2 == 0) 0xFFFFFFFF.toInt() else 0xFF000000.toInt() }
+        val out = Framing.resample(board, w, 0, 0, w, w, 224, 224)
+        assertTrue(out.all { (it and 0xFF) in 126..128 })
+    }
+
+    @Test fun enlargingKeepsAFlatColour() {
+        val c = 0xFF336699.toInt()
+        assertTrue(Framing.resample(IntArray(100) { c }, 10, 2, 3, 5, 5, 224, 224).all { it == c })
+    }
+
+    @Test fun resampleReadsTheRequestedRegion() {
+        val w = 4
+        val red = 0xFFFF0000.toInt(); val blue = 0xFF0000FF.toInt()
+        val px = IntArray(16) { if (it % w >= 2) red else blue }
+        assertTrue(Framing.resample(px, w, 2, 0, 2, 4, 1, 1).all { it == red })
+    }
+
+    private fun maskOf(side: Int, on: (Int, Int) -> Boolean) = FloatArray(side * side) { if (on(it % side, it / side)) 1f else 0f }
+
+    @Test fun theBoxFollowsTheTouchedBlobAndIgnoresStraySpots() {
+        val mask = maskOf(100) { x, y -> x in 10..29 && y in 40..59 || x in 80..84 && y in 5..9 }
+        val c = Framing.component(mask, 100, 0.2f, 0.5f)!!
+        assertEquals(Box(0.1f, 0.4f, 0.3f, 0.6f), c.box)
+        assertFalse(c.pixels[5 * 100 + 80])
+    }
+
+    @Test fun aTouchOutsideTakesTheLargestBlob() {
+        val mask = maskOf(100) { x, y -> x in 10..29 && y in 40..59 || x in 80..84 && y in 5..9 }
+        assertEquals(Box(0.1f, 0.4f, 0.3f, 0.6f), Framing.component(mask, 100, 0.9f, 0.9f)!!.box)
+    }
+
+    @Test fun anEmptyMaskFindsNothing() {
+        assertNull(Framing.component(FloatArray(100), 10, 0.5f, 0.5f))
+    }
+
+    @Test fun paddingStopsAtTheEdges() {
+        assertEquals(Box(0f, 0.38f, 0.56f, 0.62f), Framing.padded(Box(0f, 0.4f, 0.5f, 0.6f)).let { b ->
+            Box(b.left, Math.round(b.top * 100) / 100f, Math.round(b.right * 100) / 100f, Math.round(b.bottom * 100) / 100f) })
+    }
+}
