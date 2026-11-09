@@ -67,7 +67,7 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End))) { content() }
         }
     } else {
-        Scaffold(containerColor = colors.background, bottomBar = {
+        Scaffold(containerColor = colors.background, contentWindowInsets = WindowInsets.safeDrawing, bottomBar = {
             NavigationBar(containerColor = colors.surfaceContainer) {
                 items.forEach {
                     NavigationBarItem(it.selected, it.onClick, it.icon, label = it.label,
@@ -76,9 +76,9 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
                 }
             }
         }) { padding ->
-            // Arriba, la barra de estado: nada se mete debajo, ni el título ni la lista al desplazarla.
-            Box(Modifier.padding(bottom = padding.calculateBottomPadding()).consumeWindowInsets(padding).fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))) { content() }
+            // `padding` ya trae arriba la barra de estado: hay que aplicarlo entero. Consumirlo sin
+            // aplicar la parte de arriba deja a 0 cualquier windowInsetsPadding posterior.
+            Box(Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize()) { content() }
         }
     }
 }

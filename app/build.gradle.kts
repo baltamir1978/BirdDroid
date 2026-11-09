@@ -21,8 +21,8 @@ android {
         applicationId = "es.altamirano.bird"
         minSdk = 31          // Android 12
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.5"
+        versionCode = 9
+        versionName = "0.5.1"
         // Los móviles de hoy (y los Pixel de GrapheneOS) son arm64: el motor de LiteRT sólo para ese.
         ndk { abiFilters += "arm64-v8a" }
         buildConfigField("String", "XENO_CANTO_KEY", localString("xenocanto.apiKey"))
