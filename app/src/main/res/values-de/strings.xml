@@ -63,4 +63,13 @@
     <string name="photo_empty_title">Bestimme einen Vogel anhand eines Fotos</string>
     <string name="photo_empty_hint">Funktioniert am besten, wenn der Vogel einen großen Teil des Bildes ausfüllt.</string>
     <string name="photo_read_error">Das Foto konnte nicht gelesen werden</string>
+    <string name="tab_search">Suchen</string>
+    <string name="search_hint">Bachstelze, Rotkehlchen…</string>
+    <string name="search_empty">Gib den Namen eines Vogels ein.</string>
+    <string name="search_none">Kein Vogel mit diesem Namen gefunden.</string>
+    <string name="search_wikipedia">Dieser Name steht in diesen Artikeln der spanischen Wikipedia:</string>
+    <string name="searching">Suche in Wikipedia…</string>
+    <string name="search_clear">Löschen</string>
+    <string name="no_info">Die Beschreibung konnte nicht geladen werden. Besteht eine Verbindung?</string>
+    <string name="xc_failed">Die Aufnahme konnte nicht abgespielt werden.</string>
 </resources>

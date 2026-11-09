@@ -63,4 +63,13 @@
     <string name="photo_empty_title">Identifica un uccello da una foto</string>
     <string name="photo_empty_hint">Funziona meglio se l’uccello occupa buona parte dell’inquadratura.</string>
     <string name="photo_read_error">Impossibile leggere la foto</string>
+    <string name="tab_search">Cerca</string>
+    <string name="search_hint">Ballerina, pettirosso…</string>
+    <string name="search_empty">Scrivi il nome di un uccello.</string>
+    <string name="search_none">Nessun uccello trovato con questo nome.</string>
+    <string name="search_wikipedia">Questo nome compare in questi articoli di Wikipedia in spagnolo:</string>
+    <string name="searching">Ricerca su Wikipedia…</string>
+    <string name="search_clear">Cancella</string>
+    <string name="no_info">Impossibile caricare la descrizione. Sei connesso?</string>
+    <string name="xc_failed">Impossibile riprodurre la registrazione.</string>
 </resources>

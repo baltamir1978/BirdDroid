@@ -260,6 +260,16 @@ object Wikipedia {
         }
     }
 
+    /**
+     * Los artículos de la Wikipedia en español que citan ese nombre tal cual: muchos nombres
+     * populares («pitita», «pezpita») sólo están en el texto. Las aves se titulan por su nombre científico.
+     */
+    suspend fun mentioning(name: String): List<String> {
+        val q = URLEncoder.encode("\"" + name.replace("\"", "").trim() + "\"", "UTF-8")
+        val o = getJson("https://es.wikipedia.org/w/api.php?action=query&list=search&srnamespace=0&srlimit=20&format=json&srsearch=$q") ?: return emptyList()
+        return ((o["query"] as? JsonObject)?.get("search") as? JsonArray).orEmpty().mapNotNull { (it as? JsonObject)?.get("title")?.jsonPrimitive?.content }
+    }
+
     private suspend fun fetch(lang: String, scientific: String): WikiInfo? {
         val o = getJson("https://$lang.wikipedia.org/api/rest_v1/page/summary/" + URLEncoder.encode(scientific.replace(' ', '_'), "UTF-8")) ?: return null
         val thumb = (o["thumbnail"] as? JsonObject)?.get("source")?.jsonPrimitive?.content
@@ -269,12 +279,14 @@ object Wikipedia {
 }
 
 object XenoCanto {
-    /** Una grabación de calidad A de la especie (la API v3 pide clave: en Ajustes). */
+    /** Una grabación de calidad A de la especie, de canto si la hay (la API v3 pide clave: en Ajustes). */
     suspend fun recording(scientific: String, key: String): String? {
         if (key.isBlank()) return null
         val q = URLEncoder.encode("sp:\"$scientific\" q:A", "UTF-8")
         val o = getJson("https://xeno-canto.org/api/3/recordings?query=$q&key=$key") ?: return null
-        return ((o["recordings"] as? JsonArray)?.firstOrNull() as? JsonObject)?.get("file")?.jsonPrimitive?.content
+        val all = (o["recordings"] as? JsonArray).orEmpty().filterIsInstance<JsonObject>()
+        val best = all.firstOrNull { "song" in it["type"]?.jsonPrimitive?.content.orEmpty().lowercase() } ?: all.firstOrNull()
+        return best?.get("file")?.jsonPrimitive?.content
     }
 }
 

@@ -16,6 +16,7 @@ app.
 - **Filtro por lugar y temporada**, con el sitio y la fecha **del EXIF** en las fotos.
 - **Fusión**: al identificar una foto, se prefieren las especies oídas hace poco.
 - **Desempate**: si el segundo candidato queda cerca del primero, pregunta.
+- **Buscar** un ave por su nombre, también el popular («lavandera», «pajarita de las nieves»): foto, descripción y canto.
 - Historial (se borra deslizando a la izquierda), ficha de Wikipedia y canto de xeno-canto.
 - **Idiomas**: interfaz en español, inglés, alemán, francés, italiano y portugués, con los nombres
   de las especies y los sonidos (perro, sirena…) en cada idioma.

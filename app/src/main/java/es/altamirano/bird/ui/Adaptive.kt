@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
@@ -76,7 +77,7 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
             }
         }) { padding ->
             // Arriba, la barra de estado: nada se mete debajo, ni el título ni la lista al desplazarla.
-            Box(Modifier.padding(bottom = padding.calculateBottomPadding()).fillMaxSize()
+            Box(Modifier.padding(bottom = padding.calculateBottomPadding()).consumeWindowInsets(padding).fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))) { content() }
         }
     }

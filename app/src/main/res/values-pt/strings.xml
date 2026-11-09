@@ -63,4 +63,13 @@
     <string name="photo_empty_title">Identifica uma ave a partir de uma foto</string>
     <string name="photo_empty_hint">Funciona melhor se a ave ocupar boa parte do enquadramento.</string>
     <string name="photo_read_error">Não foi possível ler a foto</string>
+    <string name="tab_search">Procurar</string>
+    <string name="search_hint">Alvéola, pisco-de-peito-ruivo…</string>
+    <string name="search_empty">Escreve o nome de uma ave.</string>
+    <string name="search_none">Nenhuma ave encontrada com esse nome.</string>
+    <string name="search_wikipedia">Esse nome aparece nestes artigos da Wikipédia em espanhol:</string>
+    <string name="searching">A procurar na Wikipédia…</string>
+    <string name="search_clear">Limpar</string>
+    <string name="no_info">Não foi possível carregar a descrição. Tens ligação?</string>
+    <string name="xc_failed">Não foi possível reproduzir a gravação.</string>
 </resources>

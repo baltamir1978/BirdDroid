@@ -1,0 +1,484 @@
+Acanthis cabaret
+Accipiter gentilis|Azor|Astur gentilis|Azor del Norte|Azor norteno
+Accipiter nisus|Gavilán|Gavilan vulgar
+Acrocephalus arundinaceus|Calamoherpe arundinacea
+Acrocephalus baeticatus|Carricero Africano
+Acrocephalus melanopogon|Amnicola melanopogon|Lusciniola melanopogon
+Acrocephalus paludicola
+Acrocephalus palustris
+Acrocephalus schoenobaenus|Carricerín
+Acrocephalus scirpaceus|Carricero
+Actitis hypoleucos
+Actitis macularius|Playero manchado
+Aegithalos caudatus|Mito|Aegithalus caudatus
+Aegolius funereus|Lechuza de Tengmalm
+Aegypius monachus
+Aix galericulata
+Alaemon alaudipes
+Alauda arvensis|Alondra común euroasiática|Alondras
+Alaudala rufescens
+Alca torda
+Alcedo atthis|Martín pescador|Alcedon|Alcion
+Alectoris barbara
+Alectoris rufa|Perdiz comun
+Alle alle|Mérgulo atlántico|Alle|Mergulo
+Alopochen aegyptiaca|Oca del Nilo
+Amandava amandava
+Ammomanes cinctura
+Ammomanes deserti
+Anas acuta|Pato rabo de gallo|Ánade rabudo norteño
+Anas crecca|Barraquete comun|Cerceta de alas verdes|Pato aliverde|Pato serrano
+Anas platyrhynchos|Ánade real|Azulon|Pato salvaje
+Anas rubripes|Pato negro americano
+Anser albifrons|Ansar careto grande|Ganso careto
+Anser anser|Anade comun|Ganso comun|Ganso doméstico|Oca|Oca comun|Ánser Comun
+Anser brachyrhynchus|Ganso de patas rosadas
+Anser fabalis|Ánsar campestre|Ganso campestre
+Anser serrirostris|Ganso de la tundra|Ánsar de la tundra
+Anthus berthelotii
+Anthus campestris
+Anthus cervinus|Bisbita gorgirrojo|Bisbita de garganta roja
+Anthus petrosus|Bisbita ribereño costero
+Anthus pratensis|Bisbita común
+Anthus richardi|Bisbita patilargo
+Anthus spinoletta|Bisbita ribereño alpino
+Anthus trivialis
+Apus affinis
+Apus apus|Cirrio eurasiático|Ocejo|Oncejo|Vencejo|Vencejos
+Apus caffer|Clypcesus caffer|Vencejo de rabadilla blanca
+Apus melba|Tachymarptis melba
+Apus pallidus|Cypselus pallidus
+Apus unicolor
+Aquila adalberti
+Aquila chrysaetos|Aguila Caudal|Aguila dorada
+Ardea alba|Casmerodius albus|Garza Blanca|Garza blancagrande|Garza grande
+Ardea cinerea|Garza real europea
+Ardea intermedia
+Ardea purpurea
+Ardenna gravis|Pardela capirotada|Pardela cabeza negra
+Ardenna grisea|Pardela oscura
+Ardeola ralloides
+Arenaria interpres|Vuelvepiedras|Vuelvepiedras rojizo
+Arundinicola leucocephala|Malvasía cabeciblanca|Atrapamoscas duende|Dixiphia|Lavandera|Lavandera cabeza blanca|Monjita pantanera|Tirano-de-ciénaga de cabeza blanca
+Asio flammeus|Lechuza campestre|Lechuzón de campo|Nuco
+Asio otus|Autillo americano
+Athene noctua|Mochuelo comun|búho de Atenea|mochuelo de Atenea
+Aythya affinis
+Aythya collaris
+Aythya ferina|Porron Comun
+Aythya fuligula
+Aythya marila
+Aythya nyroca
+Bostrychia hagedash
+Botaurus stellaris
+Branta bernicla
+Branta canadensis|Barnacla Canadiense|Ganso de Canada|Gansos canadienses
+Branta leucopsis|Barnacla cariblanco
+Bubo bubo
+Bubulcus ibis|Buphus coromandus|Cancroma coromanda|Espulgabuey|Espulgabueyes|Espurgabueyes|Garcita bueyera|Garza boyera|Garza ganadera|Lepterodatis ibis
+Bucanetes githagineus|Rhodopechys githaginea|Rhodopechys githagineus
+Bucephala clangula
+Bulweria bulwerii
+Burhinus oedicnemus|Alcaraván
+Buteo buteo|Aguila ratonera|Ratonera común|Ratonero comun|busardo de la estepa|busardo euroasiatico|ratonero
+Buteo lagopus|Aguililla artica|Ratonero calzado
+Buteo rufinus|Ratonero moro|Busardo moro
+Calandrella brachydactyla
+Calidris alba|Playerito blanco|Playero blanco
+Calidris alpina|Erolia alpina|Playero comun
+Calidris canutus|Playero artico|Playero rojizo|chorlo|playero canuto
+Calidris falcinellus|Limicola falcinellus
+Calidris ferruginea
+Calidris fuscicollis|Chorlito de rabadilla blanca|Correlimos de Bonaparte|Correlimos lomiblanco|Playerito de rabadilla blanca|Playerito rabadilla|Playero de lomo blanco|Playero de rabadilla blanca
+Calidris maritima|Zarapito morado
+Calidris melanotos|Playerito Pectoral
+Calidris minuta|Correlimos chico
+Calidris pugnax|Philomachus|Philomachus pugnax
+Calidris pusilla|Playerito enano
+Calidris subruficollis|Tryngites|Tryngites subruficollis
+Calidris temminckii|Correlimos de Temmick
+Calonectris borealis|Pardela atlántica|Pardela canaria|Pardela cenicienta canaria
+Calonectris diomedea|Pardela cenicienta mediterránea|Pardela grande
+Caprimulgus europaeus|chotacabras gris
+Caprimulgus ruficollis|Chotacabras pardo
+Carduelis carduelis|Jilguero|Cardelino|Colorín|Golorito|Pajaro Pinto|Siete colores
+Carduelis citrinella|Pinzón serrano
+Carduelis corsicana
+Cecropis daurica|Golondrina dáurica oriental
+Cecropis rufula|Golondrina dáurica occidental
+Cepphus grylle
+Cercotrichas galactotes|Alzacola|Erythropygia galactotes
+Certhia brachydactyla|Agateador común
+Certhia familiaris|Agateador norteño
+Cettia cetti|Ruisenor bastardo
+Charadrius alexandrinus|Anarhynchus alexandrinus|Frailecillo blanco
+Charadrius dubius
+Charadrius hiaticula
+Charadrius morinellus|Chorlitejo carambolo|Charadrias morinellus|Eudromias morinellus
+Charadrius semipalmatus|Chorlito palmado|Chorlo semipalmado
+Chersophilus duponti|Alondra de Dupont
+Chlamydotis undulata|Avutarda hubara|Avutarda hubara africana|Chlamidotis undulata|Hubara
+Chlidonias hybrida
+Chlidonias leucopterus
+Chlidonias niger|Fumarel|Gaviotín negro
+Chloris chloris|Pinzon verde|Verderon
+Chroicocephalus genei|Picofina
+Chroicocephalus ridibundus|Gaviota reidora común
+Ciconia ciconia|Cigüena repartidora de bebés
+Ciconia nigra
+Cinclus cinclus|Mirlo acuatico|Mirlos acuaticos
+Circaetus gallicus|Águila culebrera|Aguila culebrera europea
+Circus aeruginosus|Aguilucho lagunero
+Circus cyaneus
+Circus hudsonius|Aguilucho americano|Aguilucho norteño|Gavilán de ciénaga|Gavilán rastrero|Gavilán sabanero|aguilucho rastrero
+Circus macrourus
+Circus pygargus
+Cisticola juncidis|Buitrón
+Clamator glandarius|Crialo
+Clamator jacobinus|Oxylophus jacobinus
+Clanga clanga
+Clanga pomarina
+Clangula hyemalis|Havelda
+Coccothraustes coccothraustes|Picogordo
+Columba bollii|Paloma turqué
+Columba junoniae|Paloma rabiche
+Columba livia|Paloma brava|Paloma común|Paloma de ciudad|Paloma domestica|Pombo-común
+Columba oenas
+Columba palumbus|torcaz
+Coracias garrulus
+Corvus albus|Cuervo blanco
+Corvus corax|Cuervo|Cuervo comun|Cuervos
+Corvus cornix|Corneja gris
+Corvus corone
+Corvus frugilegus|Grajo
+Corvus monedula|Grajilla|Coloeus monedula|Grajillas
+Corvus ruficollis
+Coturnix coturnix|Codorniz|Parpayuela
+Coturnix japonica
+Crex crex|Bitor|Corn Crake|Rey de codornices
+Cuculus canorus|cuco
+Curruca communis|Papuxa
+Curruca conspicillata
+Curruca curruca
+Curruca hortensis
+Curruca iberiae
+Curruca melanocephala
+Curruca undata
+Cursorius cursor|Corredor sahariano
+Cyanistes caeruleus|Herrerillo
+Cyanistes teneriffae|Herrerillo africano
+Cyanocitta cristata|Arrendajo azul|Urraca azul
+Cyanopica cooki|Rabilargo
+Cygnus atratus
+Cygnus columbianus|Cisne silbador|Tundra Swan
+Cygnus cygnus
+Cygnus olor|Cisne mudo|Cisne blanco|Cisne comun
+Delichon urbicum|Avion|Avión común occidental
+Dendrocopos leucotos
+Dendrocopos major|Picapinos
+Dendrocoptes medius|Carpintero moteado|Pajaro carpintero mediano
+Dryobates minor
+Dryocopus martius|Pito negro
+Egretta garzetta|Garceta
+Egretta gularis
+Egretta thula|Garcita blanca|Garza chica
+Elanus caeruleus|Elanio azul|Milano ala negra
+Emberiza calandra|Miliaria calandra|Triguero
+Emberiza cia
+Emberiza cineracea
+Emberiza cirlus|Esribano soteño
+Emberiza citrinella
+Emberiza hortulana
+Emberiza sahari
+Emberiza schoeniclus|Escribano paluste
+Eremophila alpestris
+Eremopterix nigriceps|Pyrrhalauda nigriceps
+Erithacus rubecula|Petirrojo
+Estrilda astrild|Pico de coral común|Pico de coral
+Euodice cantans
+Euodice malabarica|Pico de plata indio
+Falco columbarius
+Falco eleonorae|Halcón de Eleonor|Halcon marino|Halcón de Eleonora
+Falco naumanni
+Falco pelegrinoides|Halcón tagarote|Halcon de Berberia
+Falco peregrinus
+Falco subbuteo|Alcotán
+Falco tinnunculus|Cernícalo común|Cernicalo|Primilla
+Falco vespertinus|Cernicalo de patas rojas
+Ficedula albicollis|Papamoscas collarino
+Ficedula hypoleuca|Papamoscas cerrojillo europeo
+Fratercula arctica|Frailecillo común
+Fringilla coelebs|Fringilia coelbs
+Fringilla montifringilla
+Fringilla polatzeki|Pinzón azul de Gran Canaria
+Fringilla teydea|Pinzón azul de Tenerife|Pinzón Azul
+Fulica americana
+Fulica atra|Fochas|focha
+Fulica cristata|Focha cornuda|Gallareta cornuda
+Fulmarus glacialis
+Galerida cristata|Cogujada|Cotovia|Cugujada
+Galerida theklae
+Gallinago delicata|Agachona de Wilson|Becasina|Guineíta
+Gallinago gallinago|Agachadiza
+Gallinago media|Capella media
+Gallinula chloropus|Gallereta comun|Gallineta de agua|Polla de agua|Tiqui
+Garrulus glandarius|Arrendajo
+Gavia arctica|Colymbus arcticus
+Gavia immer|Colimbo común|Colymbus immer
+Gavia stellata|Colimbo de garganta roja|Colymbus stellatus
+Gelochelidon nilotica|Gaviotin pico grueso|Pagaza piquinegra
+Geronticus eremita
+Glareola pratincola|Canastera
+Glaucidium passerinum|Mochuelo alpino
+Grus grus
+Gypaetus barbatus|Quebrantahuesos|Buitre barbudo|Gyoaetus barbatus|Gypaetus
+Gyps fulvus|Buitres leonados
+Gyps rueppelli|Buitre moteado|Buitre Ruppell|Buitre de Rueppell|Buitre de Rupell|Buitre de Ruppell|Buitres de Rueppell
+Haematopus ostralegus|Ostrero comun
+Halcyon leucocephala
+Haliaeetus albicilla|Aguila de cola blanca|Aguila marina de cola blanca|Pigargo Coliblanco|Águila cola blanca|Águila marina europea
+Haliaeetus leucocephalus|Aguila americana|Aguila calva|Aguila calva americana|Aguila de cabeza blanca|Pigargo cabeciblanco
+Hieraaetus pennatus|Aguililla calzada|Hielaeetus pennatus
+Himantopus himantopus|Cigüeñuela|Cigüeñela común
+Hippolais icterina
+Hippolais polyglotta|Zarcero común
+Hirundo rustica|Golondrina|Golondrina bermeja|Golondrina tijerita|Golondrinas
+Hydrobates castro|Oceanodroma castro|Pamperito de Castro|Paíño de Harcourt
+Hydrobates leucorhous|Paíño de Leach
+Hydrobates pelagicus|Hidrobates pelagicus|Paino comun
+Hydrocoloeus minutus
+Hydroprogne caspia|Hydropogne caspia
+Ichthyaetus audouinii
+Ichthyaetus melanocephalus
+Iduna opaca|Zarcero pálido occidental
+Iduna pallida|Zarcero pálido oriental
+Ixobrychus minutus
+Junco hyemalis
+Jynx torquilla|Torcecuello
+Lagonosticta senegala
+Lagopus muta|Perdiz nival|Lagopodo nival|Perdiz blanca
+Lanius collurio
+Lanius excubitor|Alcaudón real norteño
+Lanius meridionalis|Alcaudón meridional
+Lanius minor
+Lanius senator
+Larus argentatus|Gaviota argéntea europea
+Larus canus
+Larus delawarensis
+Larus fuscus
+Larus glaucoides
+Larus hyperboreus|Gaviota hiperbórea
+Larus marinus
+Larus michahellis
+Leiothlypis celata|Bijirita de coronilla anaranjada|Chipe celato|Chipe corona anaranjada|Chipe corona naranja|Chipe deslustrado|Chipe oliváceo|Reinita olivácea
+Leiothrix lutea
+Limosa lapponica
+Limosa limosa
+Linaria cannabina
+Locustella luscinioides
+Locustella naevia
+Lophophanes cristatus
+Loxia curvirostra
+Lullula arborea|Totovía
+Luscinia megarhynchos|Ruisenor
+Luscinia svecica|Pechiazul|Cyanecula
+Lymnocryptes minimus
+Lyrurus tetrix|Gallo lira
+Mareca americana|Pato americano|chalcuán|pato chalcuán
+Mareca penelope
+Mareca strepera
+Marmaronetta angustirostris|Cerceta pardilla|Marmaronetta
+Megaceryle alcyon|Martín pescador norteño
+Melanitta americana|Negreta negra
+Melanitta fusca
+Melanitta nigra
+Melanitta perspicillata|Negreta nuca blanca|Negron costero
+Melanocorypha calandra
+Melospiza melodia|Gorrion melodico|Gorrión cantor
+Mergellus albellus
+Mergus merganser
+Mergus serrator|Mergansa pechirroja|Mergo copeton|Pato serrucho|Pato serrucho frente roja|Pato serrucho pico rojo
+Merops apiaster|Abejaruco comun
+Merops persicus|Abejaruco papirrojo
+Milvus migrans
+Milvus milvus
+Monticola saxatilis
+Monticola solitarius
+Montifringilla nivalis|Gorrion nival
+Morus bassanus|Alcatraz comun
+Motacilla alba|Aguzanieves|Apuranieves|Nevatilla|Pajarita de las nieves
+Motacilla cinerea|Alpispa
+Motacilla flava
+Muscicapa striata|Papamoscas moteado
+Myiopsitta monachus|Cotorra monje|Cotorra de pecho gris|Cotorra gris|Periquito torreño|cotorra común
+Neophron percnopterus|Alimoche|Abanto|Alimoche comun|Buitre egipcio|Guirre|Neophron
+Netta rufina
+Numenius arquata
+Numenius phaeopus|Playero trinador
+Numida meleagris
+Nycticorax nycticorax|Aldorta|Garza bruja|Garza nocturna coroninegra|Guaco|Guanaba de la Florida|Huaco comun|Huairavo|Martinete capinegro|Pedrete corona negra|Pedrete de corona negra|Pedrete gris|Rey congo cabeza negra|Wacana
+Oceanodroma leucorhoa|Paíño boreal|Oceanodroma leucorhea|Paíño de Leach
+Oena capensis|Tortola de Namaqua
+Oenanthe deserti
+Oenanthe hispanica|Collalba rubia
+Oenanthe isabellina|Collalba isabelina
+Oenanthe leucopyga|Collalba negra de Brehm
+Oenanthe leucura
+Oenanthe oenanthe
+Oriolus oriolus|Oropéndola|Víreo
+Otis tarda|Avutarda común|Avetarda|Avutarda|Avutarda euroasiática|otis
+Otus scops|Autillo|Cornichuela
+Oxyura jamaicensis|Pato Malvasia de Cara Blanca|Pato rufo|Pato zambullidor grande
+Pandion haliaetus|Aleto|Gavilan pescador|Guincho|Halieto
+Panurus biarmicus|Panuridae
+Parus major|Carbonero|Carbonero turquestano
+Passer domesticus|Chilero|Gorrión|Gorrión doméstico|Pardal
+Passer hispaniolensis
+Passer italiae|Gorrión casero|Pyrgita cisalpina
+Passer montanus|Pyrgita septentrionalis
+Passer simplex|gorrion del desierto
+Pastor roseus
+Perdix perdix
+Periparus ater|Carbonero crestinegro
+Pernis apivorus|Halcon abejero
+Petronia petronia
+Phaethon aethereus
+Phalacrocorax aristotelis|Cormorán moñudo|Gulosus aristotelis
+Phalacrocorax carbo|Cormoran negro
+Phalaropus fulicarius|Crymophilus fulicarius|Falaropo de pico grueso|Falaropo pico grueso
+Phalaropus lobatus|Falaropo pico fino
+Phasianus colchicus|Faisán común|Faisán
+Phoenicopterus roseus|Flamenco rosa|Flamenco rosado
+Phoenicurus moussieri
+Phoenicurus ochruros
+Phoenicurus phoenicurus
+Phylloscopus bonelli
+Phylloscopus canariensis|Mosquitero canario|Mosquitero de Canarias|hornero
+Phylloscopus collybita
+Phylloscopus ibericus
+Phylloscopus inornatus
+Phylloscopus sibilatrix
+Phylloscopus trochilus
+Pica pica|Urraca|Hurraca|Marica|Pega|Picaraza|Picaza|Pigaza
+Picus sharpei|Pito real ibérico
+Picus vaillantii|Pito real bereber
+Picus viridis|Pito real|Pito real euroasiático
+Platalea leucorodia|Abdarramia|Averramia
+Plectrophenax nivalis
+Plegadis falcinellus|Coco oscuro|Ibis cara oscura|Ibis de cara oscura|Ibis lustroso
+Ploceus cucullatus|Tejedor Común|Tejedor cogullado
+Pluvialis apricaria|Chorlito dorado común
+Pluvialis squatarola|Chorlo ártico
+Podiceps auritus|Zampullin de cuello rojo
+Podiceps cristatus
+Podiceps grisegena
+Podiceps nigricollis|Zampullin de cuello negro
+Podilymbus podiceps|Macá pico grueso|Picurio|Zambullidor|Zampullin|Zampullin de pico grueso
+Poecile atricapillus|Carbonero de capucha negra
+Poecile hudsonicus
+Poecile palustris
+Porphyrio porphyrio|Calamon
+Porzana porzana|Gallineta de Pecho Amarillo
+Prunella collaris
+Prunella modularis
+Psittacula krameri|Rose-ringed Parakeet
+Pternistis bicalcaratus
+Pterocles alchata|Ganga comun|ganga
+Pterocles exustus
+Pterocles orientalis|Churra|Ortega
+Pterocles senegallus
+Ptyonoprogne fuligula|Avion roquero africano|Avión Isabelino|Avión isabel meridional
+Ptyonoprogne rupestris
+Puffinus assimilis|Pardela chica|Pardela chica del sur|Pardela semejante
+Puffinus mauretanicus|Pardela balear
+Puffinus puffinus|Pardela Manx|Pardela boreal
+Puffinus yelkouan|Pardela mediterránea
+Pycnonotus barbatus
+Pycnonotus cafer|Bulbul de caudal roja|Bulbul ventrirrojo|Molpastes cafer|Molpastes haemorrhous
+Pycnonotus jocosus
+Pyrrhocorax graculus|Chova alpina
+Pyrrhocorax pyrrhocorax|Chova de pico rojo
+Pyrrhula pyrrhula
+Rallus aquaticus|Rascon comun|rascon
+Recurvirostra avosetta|Avoceta
+Regulus ignicapilla
+Regulus madeirensis
+Regulus regulus
+Regulus satrapa|Reyezuelo Corona-dorada|Reyezuelo de moño dorado
+Regulus teneriffae|Reyezuelo de Tenerife|Reyezuelo tinerfeño
+Remiz pendulinus|Pájaro moscón
+Riparia paludicola|Avión Paludícola
+Riparia riparia|Golondrina zapadora|golondrina ribereña
+Rissa tridactyla
+Saxicola dacotiae|Tarabilla canaria
+Saxicola rubetra
+Saxicola rubicola|Tarabilla común
+Scolopax rusticola|Arcea|Becada|Chochaperdiz
+Scotocerca inquieta|Scotocercidae
+Serinus canaria|Canario|Canario silvestre
+Serinus serinus|Verdecillo|Verderillo
+Setophaga coronata|Bijirita coronada|Chipe de rabadilla amarilla|Chipe grupidorado|Ciguita mirta|Dendroica coronata|Reinita culiamarilla|Reinita lomiamarilla|Reinita rabiamarilla
+Sitta europaea|sita azul
+Sitta whiteheadi|Sita corsa|sita corso
+Somateria mollissima
+Spatula clypeata|Pato cuchara|Pato cucharo
+Spatula discors|Barraquete aliazul|Cerceta de alas azules|Pato de alas azules|Pato media luna|Pato medialuna
+Spatula querquedula
+Spiloptila clamans
+Spinus pinus|Pinero rayado
+Spinus spinus|Lúgano
+Spinus tristis
+Stercorarius longicaudus|Pagalo rabudo
+Stercorarius parasiticus|Escua artico|Salteador chico|Salteador parasitico|Salteador parasito
+Stercorarius pomarinus|Salteador grande|Salteador pomarino
+Stercorarius skua|Catharacta skua
+Sterna dougallii|Gavitín rosado
+Sterna hirundo|Gaviotín golondrina
+Sterna paradisaea|Gaviotin artico
+Sternula albifrons
+Streptopelia decaocto|Paloma turca|paloma habanera|paloma turca de collar|tórtola de collar
+Streptopelia roseogrisea
+Streptopelia senegalensis|Tórtola senegalesa|Spilopelia senegalensis
+Streptopelia turtur|Tórtola común
+Strix aluco|Carabo
+Sturnus unicolor
+Sturnus vulgaris
+Sula leucogaster|Alcatraz pardo
+Sylvia atricapilla
+Sylvia balearica|Curruca balear
+Sylvia borin
+Sylvia cantillans|Curruca carrasqueña
+Sylvia subalpina|Curruca subalpina
+Tachybaptus ruficollis|Zampullin chico
+Tadorna ferruginea|Cakravaka|Chakravaka
+Tadorna tadorna
+Tchagra senegalus
+Tetrao urogallus|Urogallo
+Tetrastes bonasia|Grévol
+Tetrax tetrax|Otis tetrax|Sison|Sisón común español
+Thalasseus bengalensis|Charran bengales|Gaviotin bengali
+Thalasseus sandvicensis
+Threskiornis aethiopicus|Ibis sagrado
+Tichodroma muraria|Arañero|Pájaro arañero|Tichodromadidae|Tichodromidae|Treparrisco
+Tringa erythropus
+Tringa flavipes
+Tringa glareola|Adarríos bastardo
+Tringa melanoleuca|Chorlo mayor de patas amarillas|Pitotoy grande
+Tringa nebularia|Pitotoy grande
+Tringa ochropus
+Tringa stagnatilis
+Tringa totanus
+Troglodytes troglodytes|Chochín|ChochA­n comun|Chochin comun
+Turdus iliacus
+Turdus merula
+Turdus philomelos|Malvis|Malviz
+Turdus pilaris|Fieldfare
+Turdus torquatus
+Turdus viscivorus
+Turnix sylvaticus|Torillo
+Tyto alba|Lechuza de campanario
+Upupa epops|Abubilla|Borbute
+Uria aalge
+Vanellus vanellus|Ave fria|Avefria|Quincineta
+Zapornia parva
+Zapornia pusilla

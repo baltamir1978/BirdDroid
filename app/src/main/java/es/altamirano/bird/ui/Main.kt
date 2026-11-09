@@ -47,25 +47,33 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -91,21 +99,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -120,13 +134,18 @@ import es.altamirano.bird.XenoCanto
 import es.altamirano.bird.app
 import es.altamirano.bird.core.Candidate
 import es.altamirano.bird.core.Labels
+import es.altamirano.bird.core.SpeciesHit
+import es.altamirano.bird.core.SpeciesSearch
 import es.altamirano.bird.data.Alternative
 import es.altamirano.bird.data.Detection
 import es.altamirano.bird.core.Signal
 import es.altamirano.bird.listen.ListenBus
 import es.altamirano.bird.listen.ListenService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
@@ -180,19 +199,26 @@ private fun Root(incoming: MutableStateFlow<Uri?>) {
     val rootScope = rememberCoroutineScope()
     // Aquí arriba: la foto no se pierde al cambiar de pestaña o abrir una ficha.
     val photos = remember { PhotoSession(context.applicationContext, rootScope) }
+    // También aquí arriba: al volver de una ficha sigue lo buscado y por dónde se iba.
+    var searchText by rememberSaveable { mutableStateOf("") }
+    val searchList = rememberLazyListState()
     LaunchedEffect(shared) { shared?.let { tab = 1; photos.open(it); incoming.value = null } }
     photos.framing?.let { f -> BackHandler { photos.cancel() }; FramingScreen(f, photos); return }
     var detail by remember { mutableStateOf<Detection?>(null) }
     detail?.let { d -> BackHandler { detail = null }; DetailScreen(d) { detail = null }; return }
+    var species by remember { mutableStateOf<SpeciesHit?>(null) }
+    species?.let { s -> BackHandler { species = null }; SpeciesScreen(s) { species = null }; return }
     val items = listOf(Triple(R.string.tab_listen, Icons.Filled.Mic, 0), Triple(R.string.tab_photo, Icons.Filled.CameraAlt, 1),
-        Triple(R.string.tab_history, Icons.Filled.History, 2), Triple(R.string.tab_settings, Icons.Filled.Settings, 3)).map { (l, ic, i) ->
+        Triple(R.string.tab_search, Icons.Filled.Search, 2), Triple(R.string.tab_history, Icons.Filled.History, 3),
+        Triple(R.string.tab_settings, Icons.Filled.Settings, 4)).map { (l, ic, i) ->
         NavItem(tab == i, { tab = i }, { Icon(ic, null) }, { Text(stringResource(l)) })
     }
     AdaptiveNavigation(items) {
         when (tab) {
             0 -> ListenScreen { detail = it }
             1 -> PhotoScreen(photos)
-            2 -> HistoryScreen { detail = it }
+            2 -> SearchScreen(searchText, { searchText = it }, searchList) { species = it }
+            3 -> HistoryScreen { detail = it }
             else -> SettingsScreen()
         }
     }
@@ -432,11 +458,6 @@ private fun DetailScreen(start: Detection, onBack: () -> Unit) {
     val d = items.firstOrNull { it.id == start.id } ?: start
     var info by remember(d.scientific) { mutableStateOf<WikiInfo?>(null) }
     LaunchedEffect(d.scientific) { info = Wikipedia.summary(d.scientific) }
-    val scope = rememberCoroutineScope()
-    var player by remember { mutableStateOf<MediaPlayer?>(null) }
-    var songMsg by remember { mutableStateOf<String?>(null) }
-    DisposableEffect(Unit) { onDispose { player?.release() } }
-    val noKey = stringResource(R.string.xc_no_key); val noSong = stringResource(R.string.xc_none)
     Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = {
         TopAppBar(title = { Text(d.name) }, navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
             actions = { IconButton(onClick = { app.history.remove(d); onBack() }) { Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error) } },
@@ -449,19 +470,135 @@ private fun DetailScreen(start: Detection, onBack: () -> Unit) {
                 Text("${pct(d.confidence)} · " + Instant.ofEpochMilli(d.at).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)),
                     fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (Labels.isSpecies(d.scientific)) item {
-                OutlinedButton(onClick = {
-                    if (player != null) { player?.release(); player = null; return@OutlinedButton }
-                    scope.launch {
-                        val key = app.prefs.xenoCantoKey
-                        if (key.isBlank()) { songMsg = noKey; return@launch }
-                        val url = XenoCanto.recording(d.scientific, key) ?: run { songMsg = noSong; return@launch }
-                        player = MediaPlayer().apply { setDataSource(url); setOnPreparedListener { it.start() }; prepareAsync() }
-                    }
-                }) { Icon(if (player != null) Icons.Filled.Stop else Icons.Filled.PlayArrow, null); Text("  " + stringResource(R.string.play_song)) }
-                songMsg?.let { Text(it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            }
+            if (Labels.isSpecies(d.scientific)) item { SongButton(d.scientific) }
             if (d.needsTiebreak) item { Tiebreak(d) }
+            info?.extract?.let { item { Text(it) } }
+            if (info != null) item { Text("Wikipedia (CC BY-SA)", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+    }
+}
+
+/** Pone la grabación de xeno-canto; otro toque la para. */
+@Composable
+private fun SongButton(scientific: String) {
+    val app = LocalContext.current.app
+    val scope = rememberCoroutineScope()
+    var player by remember(scientific) { mutableStateOf<MediaPlayer?>(null) }
+    var loading by remember(scientific) { mutableStateOf(false) }
+    var message by remember(scientific) { mutableStateOf<String?>(null) }
+    DisposableEffect(scientific) { onDispose { player?.release() } }
+    val noKey = stringResource(R.string.xc_no_key); val noSong = stringResource(R.string.xc_none); val failed = stringResource(R.string.xc_failed)
+    OutlinedButton(enabled = !loading, onClick = {
+        if (player != null) { player?.release(); player = null; return@OutlinedButton }
+        message = null
+        val key = app.prefs.xenoCantoKey
+        if (key.isBlank()) { message = noKey; return@OutlinedButton }
+        loading = true
+        scope.launch {
+            val url = XenoCanto.recording(scientific, key)
+            if (url == null) { loading = false; message = noSong; return@launch }
+            val mp = MediaPlayer()
+            player = mp
+            fun stop(text: String?) { mp.release(); if (player === mp) player = null; loading = false; message = text }
+            mp.setOnPreparedListener { it.start(); loading = false }
+            mp.setOnCompletionListener { stop(null) }
+            mp.setOnErrorListener { _, _, _ -> stop(failed); true }
+            runCatching { mp.setDataSource(url); mp.prepareAsync() }.onFailure { stop(failed) }
+        }
+    }) {
+        if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+        else Icon(if (player != null) Icons.Filled.Stop else Icons.Filled.PlayArrow, null)
+        Text("  " + stringResource(R.string.play_song))
+    }
+    message?.let { Text(it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+}
+
+// --- Buscar --------------------------------------------------------------------------------
+
+@Composable
+private fun SearchScreen(text: String, onText: (String) -> Unit, list: LazyListState, onOpen: (SpeciesHit) -> Unit) {
+    val models = LocalContext.current.app.models
+    val focus = LocalFocusManager.current
+    val requester = remember { FocusRequester() }
+    val scope = rememberCoroutineScope()
+    // El índice se monta la primera vez: mejor fuera del hilo principal, antes de la primera letra.
+    LaunchedEffect(Unit) { withContext(Dispatchers.Default) { models.search }; if (text.isEmpty()) requester.requestFocus() }
+    val change = { t: String -> onText(t); scope.launch { list.scrollToItem(0) }; Unit }
+    val local = remember(text) { models.search.search(text) }
+    // Sólo si aquí no hay nada, y dejando acabar de escribir: null mientras no haya respuesta.
+    val online by produceState<List<SpeciesHit>?>(null, text) {
+        value = null
+        if (local.isEmpty() && SpeciesSearch.isEnough(text)) {
+            delay(600)
+            value = Wikipedia.mentioning(text).mapNotNull(models.search::hit).take(5)
+        }
+    }
+    Column(Modifier.fillMaxSize().imePadding()) {
+        Column(Modifier.padding(horizontal = gutter())) {
+            Title(stringResource(R.string.tab_search))
+            OutlinedTextField(text, change, Modifier.fillMaxWidth().focusRequester(requester), singleLine = true,
+                placeholder = { Text(stringResource(R.string.search_hint)) },
+                leadingIcon = { Icon(Icons.Filled.Search, null) },
+                trailingIcon = if (text.isEmpty()) null else ({
+                    IconButton(onClick = { change(""); requester.requestFocus() }) { Icon(Icons.Filled.Close, stringResource(R.string.search_clear)) }
+                }),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }))
+        }
+        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list, contentPadding = PaddingValues(horizontal = gutter(), vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val found = online
+            when {
+                !SpeciesSearch.isEnough(text) -> item { SearchNote(stringResource(R.string.search_empty)) }
+                local.isNotEmpty() -> items(local, key = { it.scientific }) { SpeciesRow(it) { onOpen(it) } }
+                found == null -> item { SearchNote(stringResource(R.string.searching)) }
+                found.isEmpty() -> item { SearchNote(stringResource(R.string.search_none)) }
+                else -> {
+                    item { SearchNote(stringResource(R.string.search_wikipedia)) }
+                    items(found, key = { it.scientific }) { SpeciesRow(it) { onOpen(it) } }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchNote(text: String) = Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+@Composable
+private fun SpeciesRow(s: SpeciesHit, onClick: () -> Unit) {
+    Card {
+        Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Thumb(s.scientific, 48)
+            Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                Text(s.name, fontWeight = FontWeight.SemiBold)
+                s.alias?.let { Text("«$it»", fontSize = 13.sp, color = Green) }
+                Scientific(s.scientific)
+            }
+        }
+    }
+}
+
+/** Lo que se ve al buscar una especie: su foto, su descripción y su canto. */
+@Composable
+private fun SpeciesScreen(s: SpeciesHit, onBack: () -> Unit) {
+    var info by remember(s.scientific) { mutableStateOf<WikiInfo?>(null) }
+    var loaded by remember(s.scientific) { mutableStateOf(false) }
+    LaunchedEffect(s.scientific) { info = Wikipedia.summary(s.scientific); loaded = true }
+    Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = {
+        TopAppBar(title = { Text(s.name) }, navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
+    }) { p ->
+        LazyColumn(Modifier.padding(p).fillMaxSize(), contentPadding = PaddingValues(horizontal = gutter(), vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            item {
+                info?.image?.let { AsyncImage(it, null, Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(14.dp)), contentScale = ContentScale.Crop) }
+            }
+            item {
+                s.alias?.let { Text("«$it»", color = Green) }
+                Scientific(s.scientific, TextUnit.Unspecified)
+            }
+            item { SongButton(s.scientific) }
+            if (loaded && info?.extract == null) item { SearchNote(stringResource(R.string.no_info)) }
             info?.extract?.let { item { Text(it) } }
             if (info != null) item { Text("Wikipedia (CC BY-SA)", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }

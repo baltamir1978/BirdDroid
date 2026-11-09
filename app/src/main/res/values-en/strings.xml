@@ -63,4 +63,13 @@
     <string name="photo_empty_title">Identify a bird from a photo</string>
     <string name="photo_empty_hint">Works best when the bird fills a good part of the frame.</string>
     <string name="photo_read_error">Could not read the photo</string>
+    <string name="tab_search">Search</string>
+    <string name="search_hint">Wagtail, robin…</string>
+    <string name="search_empty">Type the name you know a bird by.</string>
+    <string name="search_none">No bird found with that name.</string>
+    <string name="search_wikipedia">That name appears in these Spanish Wikipedia articles:</string>
+    <string name="searching">Searching Wikipedia…</string>
+    <string name="search_clear">Clear</string>
+    <string name="no_info">Could not load the description. Are you online?</string>
+    <string name="xc_failed">Could not play the recording.</string>
 </resources>

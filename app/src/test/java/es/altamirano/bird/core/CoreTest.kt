@@ -195,3 +195,53 @@ class FramingTest {
             Box(b.left, Math.round(b.top * 100) / 100f, Math.round(b.right * 100) / 100f, Math.round(b.bottom * 100) / 100f) })
     }
 }
+
+class SpeciesSearchTest {
+    private val labels = Labels(
+        listOf("Motacilla alba_White Wagtail", "Motacilla capensis_Cape Wagtail", "Motacilla flava_Western Yellow Wagtail",
+            "Passer domesticus_House Sparrow", "Passer griseus_Northern Gray-headed Sparrow", "Dog_Dog"),
+        listOf("Motacilla alba_Lavandera Blanca", "Motacilla capensis_Lavandera de El Cabo", "Motacilla flava_Lavandera Boyera",
+            "Passer domesticus_Gorrión Común", "Passer griseus_Gorrión Gris", "Dog_Perro"))
+    private val spanish = mapOf("Motacilla alba" to "Lavandera Blanca", "Passer domesticus" to "Gorrión Común")
+    private val search = SpeciesSearch(labels, spanish, mapOf(
+        "Motacilla alba" to listOf("Aguzanieves", "Pajarita de las nieves"), "Motacilla flava" to emptyList(), "Passer domesticus" to listOf("Gorrión"),
+        "Gypaetus barbatus" to listOf("Quebrantahuesos", "Quebranta")))
+
+    private fun names(q: String) = search.search(q).map { it.scientific }
+
+    @Test fun `un nombre popular lleva a su especie y dice por cual se encontro`() {
+        val hit = search.search("pajarita de las nieves").single()
+        assertEquals("Motacilla alba", hit.scientific)
+        assertEquals("Lavandera Blanca", hit.name)
+        assertEquals("Pajarita de las nieves", hit.alias)
+    }
+
+    @Test fun `el nombre de la ficha no se repite como alias`() = assertEquals(null, search.search("lavandera blanca").single().alias)
+
+    @Test fun `las de España van antes`() =
+        assertEquals(listOf("Motacilla alba", "Motacilla flava", "Motacilla capensis"), names("lavandera"))
+
+    @Test fun `lo exacto va antes que lo demas`() = assertEquals("Passer domesticus", names("gorrion").first())
+
+    @Test fun `da igual acentos, mayusculas, orden y palabras a medias`() {
+        assertEquals(listOf("Passer domesticus"), names("GORRIÓN com"))
+        assertEquals(listOf("Motacilla alba"), names("nieves paj"))
+        assertEquals(listOf("Motacilla alba"), names("motacilla alb"))
+    }
+
+    @Test fun `tambien estan las aves de España que BirdNET no conoce`() {
+        val hit = search.search("quebrantahuesos").single()
+        assertEquals(SpeciesHit("Gypaetus barbatus", "Quebrantahuesos"), hit)
+        assertEquals("Quebrantahuesos", search.hit("Gypaetus barbatus")?.name)
+    }
+
+    @Test fun `los sonidos no salen y una letra no basta`() {
+        assertEquals(emptyList<String>(), names("perro"))
+        assertEquals(emptyList<String>(), names("l"))
+    }
+
+    @Test fun `busca por nombre cientifico exacto`() {
+        assertEquals("Lavandera Blanca", search.hit("motacilla alba")?.name)
+        assertEquals(null, search.hit("Dog"))
+    }
+}

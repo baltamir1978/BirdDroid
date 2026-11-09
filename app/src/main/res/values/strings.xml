@@ -64,4 +64,13 @@
     <string name="photo_empty_title">Identifica un ave a partir de una foto</string>
     <string name="photo_empty_hint">Funciona mejor si el ave ocupa buena parte del encuadre.</string>
     <string name="photo_read_error">No se ha podido leer la foto</string>
+    <string name="tab_search">Buscar</string>
+    <string name="search_hint">Lavandera, pajarita de las nieves…</string>
+    <string name="search_empty">Escribe el nombre con el que conoces un ave. Vale el nombre popular.</string>
+    <string name="search_none">No encuentro ningún ave con ese nombre.</string>
+    <string name="search_wikipedia">Ese nombre aparece en estos artículos de Wikipedia:</string>
+    <string name="searching">Buscando en Wikipedia…</string>
+    <string name="search_clear">Borrar</string>
+    <string name="no_info">No se ha podido cargar la descripción. ¿Hay conexión?</string>
+    <string name="xc_failed">No se ha podido reproducir la grabación.</string>
 </resources>

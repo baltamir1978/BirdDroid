@@ -63,4 +63,13 @@
     <string name="photo_empty_title">Identifiez un oiseau à partir d’une photo</string>
     <string name="photo_empty_hint">Fonctionne mieux si l’oiseau occupe une bonne partie du cadre.</string>
     <string name="photo_read_error">Impossible de lire la photo</string>
+    <string name="tab_search">Chercher</string>
+    <string name="search_hint">Bergeronnette, rouge-gorge…</string>
+    <string name="search_empty">Saisissez le nom d’un oiseau.</string>
+    <string name="search_none">Aucun oiseau trouvé sous ce nom.</string>
+    <string name="search_wikipedia">Ce nom figure dans ces articles de Wikipédia en espagnol :</string>
+    <string name="searching">Recherche dans Wikipédia…</string>
+    <string name="search_clear">Effacer</string>
+    <string name="no_info">Impossible de charger la description. Êtes-vous connecté ?</string>
+    <string name="xc_failed">Impossible de lire l’enregistrement.</string>
 </resources>

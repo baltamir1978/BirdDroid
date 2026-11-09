@@ -9,6 +9,7 @@ import es.altamirano.bird.core.Framing
 import es.altamirano.bird.core.Labels
 import es.altamirano.bird.core.LocationFilter
 import es.altamirano.bird.core.Settings
+import es.altamirano.bird.core.SpeciesSearch
 import es.altamirano.bird.core.TIEBREAK_RATIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -154,12 +155,21 @@ class Models(private val context: Context) {
         val lang = Locale.getDefault().language
         val file = when (lang) { "es", "de", "fr", "it" -> "labels_$lang.txt"; "pt" -> "labels_pt_PT.txt"; else -> null }
         // Lo que las etiquetas oficiales dejan en inglés (Tools/completar-nombres.py) y los sonidos.
-        val completed = if (file == null) emptyMap() else runCatching {
-            context.assets.open("nombres/$lang.txt").bufferedReader().readLines().filter { '_' in it }.associate { it.substringBefore('_') to it.substringAfter('_') }
-        }.getOrDefault(emptyMap())
+        val completed = if (file == null) emptyMap() else completedNames(lang)
         Labels(read("labels.txt"), file?.let { runCatching { read(it) }.getOrNull() }, completed + SOUNDS.mapValues { context.getString(it.value) })
     }
     private fun read(name: String) = context.assets.open("models/$name").bufferedReader().readLines()
+    private fun completedNames(lang: String): Map<String, String> = runCatching {
+        context.assets.open("nombres/$lang.txt").bufferedReader().readLines().filter { '_' in it }.associate { it.substringBefore('_') to it.substringAfter('_') }
+    }.getOrDefault(emptyMap())
+
+    /** Buscar: los nombres en español valen sea cual sea el idioma del móvil. */
+    val search: SpeciesSearch by lazy {
+        val spanish = read("labels_es.txt").filter { '_' in it }.associate { it.substringBefore('_') to it.substringAfter('_') } + completedNames("es")
+        val spain = context.assets.open("nombres/es-espana.txt").bufferedReader().readLines().filter { it.isNotBlank() }
+            .map { it.split('|') }.associate { it[0] to it.drop(1) }
+        SpeciesSearch(labels, spanish, spain)
+    }
 
     val filter: LocationFilter by lazy { LocationFilter(map("meta_weights.bin")) }
 

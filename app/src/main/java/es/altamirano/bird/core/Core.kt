@@ -46,6 +46,62 @@ class Labels(lines: List<String>, localized: List<String>?, private val extra: M
     }
 }
 
+/** Un resultado de Buscar. [alias]: el nombre por el que se ha encontrado, si no es el de la ficha. */
+data class SpeciesHit(val scientific: String, val name: String, val alias: String? = null)
+
+/**
+ * Busca especies por cualquiera de sus nombres, sin distinguir mayúsculas ni acentos y aunque las
+ * palabras estén a medias: en el idioma del móvil, en español, en inglés, en latín y por los
+ * nombres populares. Lo exacto va primero, luego lo que vive en España.
+ *
+ * @param spanish científico → nombre en español
+ * @param spain científico → otros nombres; las claves son las especies presentes en España, y
+ * las que BirdNET no tiene (quebrantahuesos…) se llaman por el primero
+ */
+class SpeciesSearch(labels: Labels, spanish: Map<String, String>, spain: Map<String, List<String>>) {
+    private class Name(val text: String, val normal: String) { val words = normal.split(' ') }
+    private class Entry(val scientific: String, val name: String, val inSpain: Boolean, val names: List<Name>)
+
+    private val entries = (0 until labels.size).filter { Labels.isSpecies(labels.scientific[it]) }.map { i ->
+        val sci = labels.scientific[i]
+        entry(sci, labels.displayName(i), sci in spain, listOfNotNull(spanish[sci], labels.common[i]) + spain[sci].orEmpty())
+    } + spain.filter { (sci, names) -> labels.row(sci) == null && names.isNotEmpty() }.map { (sci, names) -> entry(sci, names[0], true, names.drop(1)) }
+    private val byScientific = entries.associateBy { it.scientific.lowercase() }
+
+    private fun entry(sci: String, name: String, inSpain: Boolean, others: List<String>) =
+        Entry(sci, name, inSpain, (listOf(name, sci) + others).distinctBy(::normalize).map { Name(it, normalize(it)) })
+
+    fun search(text: String, limit: Int = 40): List<SpeciesHit> {
+        val query = normalize(text)
+        if (!isEnough(text)) return emptyList()
+        val tokens = query.split(' ')
+        class Match(val entry: Entry, val name: Name, val quality: Int)
+        return entries.mapNotNull { e ->
+            // minBy se queda con el primero: a igualdad, el nombre de la ficha antes que un alias.
+            e.names.filter { n -> tokens.all { t -> n.words.any { it.startsWith(t) } } }
+                .minByOrNull { quality(it, query) }?.let { Match(e, it, quality(it, query)) }
+        }.sortedWith(compareBy({ it.quality != EXACT }, { !it.entry.inSpain }, { it.quality }, { normalize(it.entry.name) }))
+            .take(limit).map { m -> SpeciesHit(m.entry.scientific, m.entry.name, m.name.text.takeUnless { isOwnName(m.entry, m.name) }) }
+    }
+
+    /** La especie con ese nombre científico (o null si BirdNET no la tiene). */
+    fun hit(scientific: String): SpeciesHit? = byScientific[scientific.lowercase()]?.let { SpeciesHit(it.scientific, it.name) }
+
+    private fun quality(n: Name, query: String) = when { n.normal == query -> EXACT; n.normal.startsWith(query) -> 1; else -> 2 }
+    private fun isOwnName(e: Entry, n: Name) = n.normal == normalize(e.name) || n.normal == normalize(e.scientific)
+
+    companion object {
+        private const val EXACT = 0
+        private val MARKS = Regex("\\p{Mn}+")
+        private val SEPARATORS = Regex("[\\s-]+")
+
+        fun normalize(s: String) = MARKS.replace(java.text.Normalizer.normalize(s.lowercase(), java.text.Normalizer.Form.NFD), "").replace(SEPARATORS, " ").trim()
+
+        /** Con menos de dos letras saldría media lista. */
+        fun isEnough(text: String) = normalize(text).length >= 2
+    }
+}
+
 /**
  * El filtro por lugar y semana de BirdNET v2.4, traducido de `LocationFilter.swift` con los mismos
  * pesos (`meta_weights.bin`): da los mismos números que la app de iOS.
