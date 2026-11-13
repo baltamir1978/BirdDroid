@@ -10,6 +10,7 @@
     <string name="tap_to_listen">Tippen zum Zuhören</string>
     <string name="maybe">%1$s? (%2$s)</string>
     <string name="mic_failed">Das Mikrofon konnte nicht geöffnet werden</string>
+    <string name="analysis_failed">Analyse fehlgeschlagen: Zuhören beendet</string>
     <string name="recent">Zuletzt</string>
     <string name="look_alike">Diese Arten ähneln sich. Welche war es?</string>
     <string name="gallery">Galerie</string>

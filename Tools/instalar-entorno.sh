@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Instala lo necesario para compilar las apps de Android en Linux, sin sudo y sin Android Studio:
 #   - JDK 17 (Temurin)            → ~/Android/jdk
-#   - Android SDK (cmdline-tools, platform-tools, android-35, build-tools 35.0.0) → ~/Android/Sdk
-#   - Gradle 8.11.1 (sólo para generar el wrapper la primera vez) → ~/Android/gradle-8.11.1
+#   - Android SDK (cmdline-tools, platform-tools, android-37, build-tools 36.0.0) → ~/Android/Sdk
+#   - Gradle 9.9.1 (sólo para generar el wrapper la primera vez) → ~/Android/gradle-9.9.1
 # Y deja las variables en ~/.bashrc y el sdk.dir en local.properties.
 #
 # Se puede volver a ejecutar: lo que ya está instalado se salta.
@@ -12,7 +12,7 @@ set -euo pipefail
 BASE="$HOME/Android"
 JDK="$BASE/jdk"
 SDK="$BASE/Sdk"
-GRADLE_VERSION="8.11.1"
+GRADLE_VERSION="9.9.1"
 GRADLE="$BASE/gradle-$GRADLE_VERSION"
 CMDTOOLS_ZIP="commandlinetools-linux-11076708_latest.zip"
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -51,7 +51,7 @@ SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
 
 echo "» Licencias y paquetes del SDK…"
 yes | "$SDKMANAGER" --licenses >/dev/null || true
-"$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+"$SDKMANAGER" "platform-tools" "platforms;android-37.0" "build-tools;36.0.0"
 
 # Variables para las próximas terminales
 if ! grep -q "# Android: entorno de compilación (JDK, SDK)" "$HOME/.bashrc" 2>/dev/null; then

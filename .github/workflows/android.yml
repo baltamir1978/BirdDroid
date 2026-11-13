@@ -1,0 +1,52 @@
+name: Android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # El código compartido va en otro repositorio y se incluye desde la carpeta de al lado.
+      - uses: actions/checkout@v4
+        with:
+          path: BirdDroid
+      - uses: actions/checkout@v4
+        with:
+          repository: baltamir1978/droid-common
+          path: droid-common
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      # Los modelos no van en el repositorio (~65 MB): se bajan una vez y se guardan en caché.
+      - uses: actions/cache@v4
+        with:
+          path: BirdDroid/app/src/main/assets/models
+          key: modelos-${{ hashFiles('BirdDroid/Tools/descargar-modelos.sh') }}
+      - name: Modelos
+        working-directory: BirdDroid
+        run: Tools/descargar-modelos.sh
+      # Sin claves ni secretos: la app compila igual (se meten en Ajustes dentro de la app).
+      - name: Pruebas, lint y APK de depuración
+        working-directory: BirdDroid
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug --console=plain
+      - name: Informe de lint
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes
+          path: |
+            BirdDroid/app/build/reports/
+          retention-days: 7

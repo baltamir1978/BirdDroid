@@ -245,3 +245,18 @@ class SpeciesSearchTest {
         assertEquals(null, search.hit("Dog"))
     }
 }
+
+class ExifDateTest {
+    @Test fun readsTheDayOfThePhoto() {
+        assertEquals(LocalDate.of(2026, 5, 17), exifDate("2026:05:17 08:31:02"))
+        assertEquals(LocalDate.of(2026, 5, 17), exifDate("2026-05-17T08:31:02"))
+    }
+
+    @Test fun emptyOrBrokenDatesAreNoDate() {
+        assertNull(exifDate(null))
+        assertNull(exifDate(""))
+        assertNull(exifDate("0000:00:00 00:00:00"))
+        assertNull(exifDate("2026:13:40 00:00:00"))
+        assertNull(exifDate("ayer"))
+    }
+}

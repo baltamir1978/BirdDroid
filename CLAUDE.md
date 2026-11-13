@@ -4,7 +4,11 @@ Versión para Android de **BirdApp** (iOS), escrita **desde cero en Kotlin + Jet
 común a las apps de Android (firma, `versionCode`, secretos, distribución) está en el `CLAUDE.md` de
 la carpeta de proyectos; aquí va lo propio de esta.
 
-## Estado (9-nov-2026)
+## Estado (13-nov-2026)
+
+**0.5.2 (13-nov-2026): la escucha ya no se queda muda sin avisar.** Si el modelo lanzaba una excepción, el análisis moría callado mientras el micrófono seguía grabando y la cola de audio crecía sin fin; ahora se dice («El análisis ha fallado: escucha detenida», `analysis_failed`) y se para. De paso, el error (también el de «no se pudo abrir el micrófono») **ya no se borra al parar el servicio**: antes `onDestroy` lo quitaba antes de que se viera. La fecha de la foto sale de `TAG_DATETIME_ORIGINAL` (`exifDate` en `core/Core.kt`, con pruebas) en vez de `ExifInterface.dateTimeOriginal`, que es de uso interno de la librería. LiteRT 1.0.1 → 1.4.2 (**comprobar en el móvil que los modelos dan lo mismo**; la 2.x cambia de API y se deja). APK en `~/Documentos/BirdDroid-0.5.2.apk`.
+
+**Común a las cinco apps (13-nov-2026):** dependencias al día (Gradle 9.9.1, AGP 9.5.1 con Kotlin integrado —ya no se aplica `kotlin.android`—, Kotlin 2.4.21, Compose BOM 2026.09, `compileSdk` 37, `targetSdk` 36); **código compartido en `../droid-common`** (aquí: las piezas de modo escritorio; `ui/Adaptive.kt` se queda con el riel y su `gutter`), que hay que tener clonado al lado (`includeBuild` en `settings.gradle.kts`); **CI** en GitHub Actions (`.github/workflows/android.yml`: pruebas, lint y APK de depuración en cada push); `lintDebug` pasa sin errores y forma parte de la comprobación (`./gradlew testDebugUnitTest lintDebug`). `NonObservableLocale` va como aviso: al cambiar el idioma Android recrea la actividad. **Nada de esto está probado en el móvil.**
 
 **0.5.1 (9-nov-2026):** los títulos de las pestañas ya no se montan con la barra de estado. `AdaptiveNavigation` hacía `consumeWindowInsets(padding)` aplicando sólo el margen inferior: la parte de arriba quedaba consumida y el `windowInsetsPadding` siguiente daba 0. Sin probar en el móvil.
 

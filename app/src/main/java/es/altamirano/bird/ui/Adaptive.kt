@@ -1,5 +1,7 @@
 package es.altamirano.bird.ui
 
+import es.altamirano.common.ui.READABLE_WIDTH
+import es.altamirano.common.ui.isWide
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -29,23 +31,14 @@ import androidx.compose.ui.unit.dp
 
 // Modo escritorio (ventanas que se redimensionan), tableta o móvil tumbado.
 
-/** Ancho al que el contenido deja de estirarse. */
-val READABLE_WIDTH = 720.dp
-
-/** Ventana ancha: la navegación pasa de la barra inferior a un riel a la izquierda. */
-@Composable
-fun isWide(): Boolean = LocalConfiguration.current.screenWidthDp >= 600
-
 /**
  * El margen lateral para que el contenido no pase de [max] y quede centrado, nunca menos de
  * [min]. Va como `contentPadding` de la lista, no limitando la lista: así la rueda del ratón
  * desplaza también sobre los márgenes.
  */
 @Composable
-fun gutter(min: Dp = 16.dp, max: Dp = READABLE_WIDTH): Dp {
-    val w = LocalConfiguration.current.screenWidthDp.dp - if (isWide()) 80.dp else 0.dp // el riel
-    return maxOf(min, (w - max) / 2)
-}
+fun gutter(min: Dp = 16.dp, max: Dp = READABLE_WIDTH): Dp =
+    es.altamirano.common.ui.gutter(min, max, reserved = if (isWide()) 80.dp else 0.dp) // el riel
 
 class NavItem(val selected: Boolean, val onClick: () -> Unit, val icon: @Composable () -> Unit, val label: @Composable () -> Unit)
 

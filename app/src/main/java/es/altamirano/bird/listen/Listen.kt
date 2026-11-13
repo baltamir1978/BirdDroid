@@ -88,7 +88,8 @@ class ListenService : Service() {
 
     override fun onDestroy() {
         scope.cancel()
-        ListenBus.state.update { ListenState() }
+        // El error (micrófono, modelo) se queda a la vista hasta que se vuelva a escuchar.
+        ListenBus.state.update { ListenState(error = it.error) }
         super.onDestroy()
     }
 
@@ -162,7 +163,18 @@ class ListenService : Service() {
                 val take = minOf(c.size - i, Signal.WINDOW - filled)
                 System.arraycopy(c, i, acc, filled, take); filled += take; i += take
                 if (filled == Signal.WINDOW) {
-                    analyze(acc.copyOf(), scorer)
+                    // Si el modelo falla, se dice y se para: antes el análisis moría callado, el
+                    // micrófono seguía grabando y la cola de audio crecía sin fin.
+                    try {
+                        analyze(acc.copyOf(), scorer)
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        android.util.Log.e("BirdDroid", "Análisis fallido", e)
+                        ListenBus.state.update { it.copy(error = getString(R.string.analysis_failed)) }
+                        stopSelf()
+                        return
+                    }
                     System.arraycopy(acc, Signal.HOP, acc, 0, Signal.WINDOW - Signal.HOP); filled = Signal.WINDOW - Signal.HOP
                     // Si el móvil no da abasto y se acumula más de una ventana, se salta a lo último:
                     // mejor analizar lo que suena ahora que lo de hace diez segundos.

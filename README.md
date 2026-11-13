@@ -6,12 +6,13 @@ Versión para Android de [BirdApp](https://github.com/baltamir1978/BirdApp) (iOS
 cero en Kotlin + Jetpack Compose. Funciona sin Google Play (GrapheneOS): LiteRT va dentro de la
 app.
 
-**Estado: 0.3.3** (8-nov-2026), sin probar todavía en el móvil. Ver `CLAUDE.md`.
+**Estado: 0.5.2** (13-nov-2026); lo último, sin probar todavía en el móvil. Ver `CLAUDE.md`.
 
 ## Qué hace
 
 - **Por el canto** con BirdNET (GLOBAL 6K V2.4), en directo y también con la app minimizada.
-  Mientras escucha, un pájaro en el centro se llena de verde con el volumen, como en BirdApp.
+  Mientras escucha, un pájaro en el centro se llena de verde con el volumen, como en BirdApp. Si
+  el micrófono o el modelo fallan, lo dice y deja de escuchar.
 - **Por foto** con Google AIY Birds V1, con las especies pasadas a la taxonomía de BirdNET. La app busca el pájaro en la foto; con un toque se recorta por su silueta (MediaPipe Magic Touch) y también se puede arrastrar un recuadro.
 - **Filtro por lugar y temporada**, con el sitio y la fecha **del EXIF** en las fotos.
 - **Fusión**: al identificar una foto, se prefieren las especies oídas hace poco.
@@ -26,8 +27,13 @@ app.
 ```sh
 Tools/instalar-entorno.sh       # JDK 17, Android SDK y Gradle en ~/Android, sin sudo
 Tools/descargar-modelos.sh      # ~75 MB de modelos (no están en el repositorio)
-./gradlew testDebugUnitTest assembleRelease
+./gradlew testDebugUnitTest lintDebug assembleRelease
 ```
+
+Hace falta clonar también [droid-common](https://github.com/baltamir1978/droid-common) **en la
+carpeta de al lado** (`../droid-common`): el código que comparten las apps de Android, que Gradle
+incluye desde ahí. En cada push, GitHub Actions pasa las pruebas y el lint
+(`.github/workflows/android.yml`).
 
 Los nombres que las etiquetas de BirdNET dejan en inglés se completan en
 `app/src/main/assets/nombres/`, que sí está en el repositorio. Para regenerarlos desde Wikidata:

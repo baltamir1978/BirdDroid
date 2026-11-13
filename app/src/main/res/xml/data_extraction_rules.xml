@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Qué sale del móvil en una copia de seguridad (Seedvault en GrapheneOS) o al pasar a otro móvil:
+  los ajustes y los datos de la app. Las cachés y `noBackupFilesDir` (las sesiones cifradas con
+  una clave del Keystore, que en otro móvil no se podrían leer) quedan fuera siempre.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="." />
+        <include domain="file" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="." />
+        <include domain="file" path="." />
+    </device-transfer>
+</data-extraction-rules>

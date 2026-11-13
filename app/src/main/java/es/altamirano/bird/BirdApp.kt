@@ -22,6 +22,7 @@ import es.altamirano.bird.core.Framing
 import es.altamirano.bird.core.Labels
 import es.altamirano.bird.core.Square
 import es.altamirano.bird.core.applyAudioPrior
+import es.altamirano.bird.core.exifDate
 import es.altamirano.bird.data.Detection
 import es.altamirano.bird.data.History
 import es.altamirano.bird.data.Models
@@ -38,7 +39,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URLEncoder
 import java.time.LocalDate
-import java.time.ZoneId
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -105,7 +105,7 @@ object Photos {
         val rotation = exif?.rotationDegrees ?: 0
         val rotated = if (rotation == 0) bmp else Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, Matrix().apply { postRotate(rotation.toFloat()) }, true)
         val latLon = exif?.latLong?.takeUnless { it[0] == 0.0 && it[1] == 0.0 }
-        val date = exif?.dateTimeOriginal?.let { java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
+        val date = exifDate(exif?.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL))
         PhotoInfo(rotated, latLon?.get(0), latLon?.get(1), date)
     }
 

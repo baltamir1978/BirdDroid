@@ -2,7 +2,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -15,14 +14,14 @@ fun localString(key: String) = "\"" + (local.getProperty(key) ?: "").replace("\"
 
 android {
     namespace = "es.altamirano.bird"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "es.altamirano.bird"
         minSdk = 31          // Android 12
-        targetSdk = 35
-        versionCode = 9
-        versionName = "0.5.1"
+        targetSdk = 36
+        versionCode = 10
+        versionName = "0.5.2"
         // Los móviles de hoy (y los Pixel de GrapheneOS) son arm64: el motor de LiteRT sólo para ese.
         ndk { abiFilters += "arm64-v8a" }
         buildConfigField("String", "XENO_CANTO_KEY", localString("xenocanto.apiKey"))
@@ -40,6 +39,10 @@ android {
         }
     }
 
+    // Leer `Locale.getDefault()` al pintar no se entera de un cambio de idioma en caliente; aquí da
+    // igual, porque al cambiar el idioma Android recrea la actividad. Aviso, no error.
+    lint { warning += "NonObservableLocale" }
+
     buildTypes {
         release {
             if (releaseKey != null) signingConfig = signingConfigs.getByName("release")
@@ -52,7 +55,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
     // Los modelos se leen mapeados en memoria: sin comprimir dentro del APK.
     androidResources { noCompress += listOf("tflite", "bin") }
     buildFeatures {
@@ -62,6 +64,7 @@ android {
 }
 
 dependencies {
+    implementation("es.altamirano:common")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

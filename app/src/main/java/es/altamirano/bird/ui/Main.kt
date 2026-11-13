@@ -526,6 +526,8 @@ private fun SearchScreen(text: String, onText: (String) -> Unit, list: LazyListS
     val change = { t: String -> onText(t); scope.launch { list.scrollToItem(0) }; Unit }
     val local = remember(text) { models.search.search(text) }
     // Sólo si aquí no hay nada, y dejando acabar de escribir: null mientras no haya respuesta.
+    // Lint no ve las asignaciones porque `value` se toca dentro del `if`: falso positivo.
+    @Suppress("ProduceStateDoesNotAssignValue")
     val online by produceState<List<SpeciesHit>?>(null, text) {
         value = null
         if (local.isEmpty() && SpeciesSearch.isEnough(text)) {

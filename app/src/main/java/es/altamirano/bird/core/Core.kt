@@ -314,3 +314,14 @@ fun applyAudioPrior(cands: MutableList<Candidate>, heard: Map<String, Long>, now
     for (i in cands.indices) cands[i] = cands[i].copy(confidence = cands[i].confidence * before / after)
     return boosted
 }
+
+/**
+ * El día de la foto, de `DateTimeOriginal` («2026:05:17 08:31:02», hora local de la cámara).
+ * `ExifInterface.dateTimeOriginal` es de uso interno de la librería; la fecha va en el texto.
+ */
+internal fun exifDate(value: String?): java.time.LocalDate? {
+    val day = value?.trim()?.take(10)?.split(':', '-') ?: return null
+    if (day.size != 3) return null
+    val (y, m, d) = day.map { it.toIntOrNull() ?: return null }
+    return runCatching { java.time.LocalDate.of(y, m, d) }.getOrNull()?.takeIf { it.year > 1970 }
+}

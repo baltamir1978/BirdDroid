@@ -10,6 +10,7 @@
     <string name="tap_to_listen">Tap to listen</string>
     <string name="maybe">%1$s? (%2$s)</string>
     <string name="mic_failed">Couldn’t open the microphone</string>
+    <string name="analysis_failed">Analysis failed: listening stopped</string>
     <string name="recent">Recent</string>
     <string name="look_alike">These species look alike. Which one was it?</string>
     <string name="gallery">Gallery</string>
