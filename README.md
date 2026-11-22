@@ -6,7 +6,7 @@ Versión para Android de [BirdApp](https://github.com/baltamir1978/BirdApp) (iOS
 cero en Kotlin + Jetpack Compose. Funciona sin Google Play (GrapheneOS): LiteRT va dentro de la
 app.
 
-**Estado: 0.5.2** (13-nov-2026); lo último, sin probar todavía en el móvil. Ver `CLAUDE.md`.
+**Estado: 0.5.3** (22-nov-2026); lo último, sin probar todavía en el móvil. Ver `CLAUDE.md`.
 
 ## Qué hace
 

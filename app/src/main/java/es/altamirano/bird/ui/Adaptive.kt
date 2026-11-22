@@ -16,15 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import es.altamirano.common.ui.GlassNavigationBar
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -51,9 +49,7 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
             NavigationRail(Modifier.fillMaxHeight(), containerColor = colors.surfaceContainer) {
                 Spacer(Modifier.padding(top = 8.dp))
                 items.forEach {
-                    NavigationRailItem(it.selected, it.onClick, it.icon, label = it.label,
-                        colors = NavigationRailItemDefaults.colors(selectedIconColor = colors.primary,
-                            selectedTextColor = colors.primary, indicatorColor = colors.primaryContainer))
+                    NavigationRailItem(it.selected, it.onClick, it.icon, label = it.label)
                 }
             }
             Box(Modifier.weight(1f).fillMaxHeight()
@@ -61,12 +57,9 @@ fun AdaptiveNavigation(items: List<NavItem>, content: @Composable () -> Unit) {
         }
     } else {
         Scaffold(containerColor = colors.background, contentWindowInsets = WindowInsets.safeDrawing, bottomBar = {
-            NavigationBar(containerColor = colors.surfaceContainer) {
-                items.forEach {
-                    NavigationBarItem(it.selected, it.onClick, it.icon, label = it.label,
-                        colors = NavigationBarItemDefaults.colors(selectedIconColor = colors.primary,
-                            selectedTextColor = colors.primary, indicatorColor = colors.primaryContainer))
-                }
+            // Cristal de Expressive (droid-common); lo seleccionado, en el verde clarito del tema.
+            GlassNavigationBar {
+                items.forEach { NavigationBarItem(it.selected, it.onClick, it.icon, label = it.label) }
             }
         }) { padding ->
             // `padding` ya trae arriba la barra de estado: hay que aplicarlo entero. Consumirlo sin

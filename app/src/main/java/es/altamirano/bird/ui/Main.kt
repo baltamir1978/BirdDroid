@@ -154,17 +154,20 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 import kotlin.math.roundToInt
+import es.altamirano.common.ui.AppTheme
+import es.altamirano.common.ui.withBrandSelection
 
 /** El verde de la app (el mismo de BirdApp, RadioApp y Tiempo ES). */
 val Green = Color(0xFF239E7B)
 val GreenDeep = Color(0xFF0B6F53)
 
 @Composable
-fun BirdTheme(content: @Composable () -> Unit) = MaterialTheme(
+fun BirdTheme(content: @Composable () -> Unit) = AppTheme(
+    // Material 3 Expressive (droid-common): lo seleccionado, en verde clarito (sin esto era lila).
     colorScheme = if (isSystemInDarkTheme()) darkColorScheme(primary = Color(0xFF2BBE92), onPrimary = Color.Black, primaryContainer = Color(0xFF14332A),
-        background = Color.Black, surface = Color.Black, surfaceContainer = Color(0xFF1C1C1E))
+        background = Color.Black, surface = Color.Black, surfaceContainer = Color(0xFF1C1C1E)).withBrandSelection(Color(0xFF2BBE92), dark = true)
     else lightColorScheme(primary = Color(0xFF1A7F60), onPrimary = Color.White, primaryContainer = Color(0xFFE6F5ED),
-        background = Color(0xFFF2F2F7), surface = Color(0xFFF2F2F7), surfaceContainer = Color.White),
+        background = Color(0xFFF2F2F7), surface = Color(0xFFF2F2F7), surfaceContainer = Color.White).withBrandSelection(Color(0xFF239E7B), dark = false),
     content = content,
 )
 

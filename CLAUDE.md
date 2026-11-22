@@ -4,7 +4,9 @@ Versión para Android de **BirdApp** (iOS), escrita **desde cero en Kotlin + Jet
 común a las apps de Android (firma, `versionCode`, secretos, distribución) está en el `CLAUDE.md` de
 la carpeta de proyectos; aquí va lo propio de esta.
 
-## Estado (13-nov-2026)
+## Estado (22-nov-2026)
+
+**0.5.3 (22-nov-2026): aspecto Material 3 Expressive, como GpsDroid.** Lo pidió Bruno («dale una vuelta al aspecto del resto de apps con este lenguaje de diseño; lo seleccionado debería estar en un verde clarito, no en el mismo gris»). El tema sale de `droid-common` (`ui/Expressive.kt`: `AppTheme` = `MaterialExpressiveTheme` + `MotionScheme.expressive()` + esquinas grandes, y `withBrandSelection`, que pone `secondaryContainer` —chips, indicador de la barra, botones segmentados— en un tono clarito del color de la app). material3 1.5.0-rc01 en todas. Igual que Letras, `secondaryContainer` era el lila por defecto: ahora verde clarito; barra inferior de cristal. APK en `~/Documentos/BirdDroid-0.5.3.apk`. **Sin probar en el móvil.**
 
 **0.5.2 (13-nov-2026): la escucha ya no se queda muda sin avisar.** Si el modelo lanzaba una excepción, el análisis moría callado mientras el micrófono seguía grabando y la cola de audio crecía sin fin; ahora se dice («El análisis ha fallado: escucha detenida», `analysis_failed`) y se para. De paso, el error (también el de «no se pudo abrir el micrófono») **ya no se borra al parar el servicio**: antes `onDestroy` lo quitaba antes de que se viera. La fecha de la foto sale de `TAG_DATETIME_ORIGINAL` (`exifDate` en `core/Core.kt`, con pruebas) en vez de `ExifInterface.dateTimeOriginal`, que es de uso interno de la librería. LiteRT 1.0.1 → 1.4.2 (**comprobar en el móvil que los modelos dan lo mismo**; la 2.x cambia de API y se deja). APK en `~/Documentos/BirdDroid-0.5.2.apk`.
 
