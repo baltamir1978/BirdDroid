@@ -4,7 +4,42 @@ Versión para Android de **BirdApp** (iOS), escrita **desde cero en Kotlin + Jet
 común a las apps de Android (firma, `versionCode`, secretos, distribución) está en el `CLAUDE.md` de
 la carpeta de proyectos; aquí va lo propio de esta.
 
-## Estado (22-nov-2026)
+## Estado (25-nov-2026)
+
+**0.6.0 (25-nov-2026): BirdNET+ V3.** Lo pidió Bruno («dale») tras ver que había modelo nuevo: el
+plan es medir en el móvil cuánto tarda y cuánta batería gasta escuchando y, si es demasiado,
+volver a V2.4 (`git revert` y los modelos viejos en `~/Documentos/Software/ModelosBirdDroid/v2.4`).
+- **Modelo**: BirdNET+ V3.0.1 Global 12K, **versión recortada FP16** para móviles (71 MB; una de
+  sus tres cabezas), de Zenodo (registro 24362980; la 3.0 del 13-nov daba NaN con silencio).
+  11.725 clases (9.788 aves, más insectos, anfibios, mamíferos y 16 sonidos), **Apache 2.0** (V2.4
+  era CC BY-NC-SA). En la prueba WABAD de sus autores, AP 0,55 frente a 0,27 de V2.4, pero **unas
+  10 veces más cálculo** (1,38 GMAC por segundo de audio). Aquí, en Python con LiteRT y 2 hilos,
+  ~100 ms por ventana en el portátil; en el móvil, la pantalla de escuchar enseña los ms de cada
+  ventana (`inferenceMs`: con una cada 0,8 s, por encima de ~800 ms no da abasto y se saltan).
+- **Entrada**: audio tal cual a **32 kHz** (V2.4: 48 kHz), 3 s = 96.000 muestras; la entrada viene
+  como [1, 1] y hay que hacer `resizeInput` antes de usarla. **Salida: probabilidades** (V2.4 daba
+  logits) y un segundo tensor con el embebido de 1.280; se busca el de las puntuaciones por tamaño.
+  `Scorer` las vuelve a logit para que la sensibilidad siga haciendo lo mismo.
+- **El micrófono sigue a 48 kHz** y `Resampler` (`core/`, con pruebas) lo pasa a 32 kHz: pedir
+  32 kHz a `AudioRecord` con la fuente UNPROCESSED no lo aceptan todos los móviles, y la caída a
+  `MIC` trae la supresión de ruido, que se come los cantos.
+- **V3 sí depende del volumen** (V2.4 no): con el audio a 1/10.000 un mirlo bajaba de 0,87 a 0,31.
+  Cada ventana se normaliza a pico 0,5 (`Signal.normalized`), y el silencio digital ni se analiza:
+  el modelo recortado da 0,25 a algo con silencio puro.
+- **Filtro de lugar**: el **Geomodel V3.0.5** (7,7 MB, LiteRT; [lat, lon, semana 1–48] → 14.057
+  especies), que va en el zip de Zenodo. El 3.0.4 de GitHub **no sirve**: usa la operación `Erf`
+  de TensorFlow (haría falta `tensorflow-lite-select-tf-ops`, decenas de MB). Se casa con el audio
+  por nombre científico (~10.900 de 11.725; lo que no tiene queda a 0,5). Es muy tajante (en
+  Madrid lo de allí sale > 0,9 y lo de América < 0,001), así que los escalones de whoBIRD suben a
+  0,1 / 0,03 / 0,01. Sustituye a `meta_weights.bin` y a su red en Kotlin.
+- **Nombres**: del CSV del modelo (36 idiomas), que `Tools/descargar-modelos.sh` convierte en
+  `labels3*.txt` (es: el de España si lo hay; pt: el de Portugal). Ahora manda la etiqueta y lo
+  completado de Wikidata sólo cubre lo que quede en inglés. Sonidos nuevos traducidos (avión,
+  tren, claxon…); los de V2.4 siguen por el historial.
+- Comprobado en Python con cantos de Wikimedia: mirlo, petirrojo y pinzón, cada uno el primero en
+  la mayoría de las ventanas. 37 pruebas y lint. APK de 98 MB (antes 66). Se aparta de BirdApp
+  (iOS), que sigue con V2.4. APK en `~/Documentos/Software/BirdDroid-0.6.0.apk`. **Sin probar en el
+  móvil** (no se instala en el emulador: sólo arm64).
 
 **0.5.3 (22-nov-2026): aspecto Material 3 Expressive, como GpsDroid.** Lo pidió Bruno («dale una vuelta al aspecto del resto de apps con este lenguaje de diseño; lo seleccionado debería estar en un verde clarito, no en el mismo gris»). El tema sale de `droid-common` (`ui/Expressive.kt`: `AppTheme` = `MaterialExpressiveTheme` + `MotionScheme.expressive()` + esquinas grandes, y `withBrandSelection`, que pone `secondaryContainer` —chips, indicador de la barra, botones segmentados— en un tono clarito del color de la app). material3 1.5.0-rc01 en todas. Igual que Letras, `secondaryContainer` era el lila por defecto: ahora verde clarito; barra inferior de cristal. APK en `~/Documentos/BirdDroid-0.5.3.apk`. **Sin probar en el móvil.**
 
@@ -29,8 +64,8 @@ modelos; sólo arm64). En el móvil, la 0.2 oía pájaros cerca pero se quedaba 
 - **La sensibilidad iba al revés** (también en iOS): se usaba como pendiente de la sigmoide, y con
   el umbral por debajo del 50 % una pendiente mayor exige más. Ahora es como en BirdNET-Analyzer:
   pendiente = 2 − sensibilidad (`Settings.slope`).
-- **La ganancia no importa**: BirdNET normaliza cada ventana (mismo logit con el audio a 1/10.000,
-  comprobado en Python). Subir el volumen no ayuda; lo que cuenta es la relación señal/ruido.
+- **La ganancia no importa** (con V2.4): BirdNET normalizaba cada ventana (mismo logit con el audio
+  a 1/10.000, comprobado en Python). Con V3 sí importa: ver la 0.6.0.
 - La captura ya no espera al modelo (antes se analizaba dentro del bucle de lectura con un búfer
   de 1 s y se perdían muestras); el medidor va en dB; Ajustes comparte los últimos 15 s en WAV
   para analizarlos aquí con `Tools/referencia/birdnet_check.py`.
@@ -41,7 +76,8 @@ Comprobado aquí, en Python con LiteRT (`Tools/referencia/`):
 - **AIY Birds V1** (Kaggle, 224×224 RGB uint8; salida uint8 con escala 1/256): una foto de mirlo,
   97 %. **Su clase de fondo se llama `None`** (en la conversión de iOS era `__background__`).
 - **El filtro por lugar y semana** con `meta_weights.bin` de iOS: correlación 0,9997 con el modelo
-  oficial MData de BirdNET; la traducción a Kotlin da los mismos números (prueba).
+  oficial MData de BirdNET; la traducción a Kotlin daba los mismos números (hasta la 0.5; desde la
+  0.6, el Geomodel de BirdNET+ V3).
 
 Hecho, traducido de BirdApp: escucha en un servicio de tipo micrófono (ventanas de 3 s cada
 0,8 s, puertas de saturación y de señal, paso alto, sigmoide con sensibilidad, filtro suave de
@@ -102,8 +138,8 @@ hace, todo **en el dispositivo**:
 - **La ubicación del EXIF viene borrada** salvo que la app tenga `ACCESS_MEDIA_LOCATION` y pida el
   original (`MediaStore.setRequireOriginal`). Con fotos compartidas desde Google Fotos puede llegar
   sin ubicación igualmente: comprobarlo en el móvil, porque el filtro por lugar depende de ello.
-- **Los modelos pesan** (~50 MB el de BirdNET): el original recomendaba Git LFS; aquí se bajan con
+- **Los modelos pesan** (71 MB el de BirdNET+ V3): el original recomendaba Git LFS; aquí se bajan con
   `Tools/descargar-modelos.sh` (ver arriba).
-- **Licencia de BirdNET**: CC BY-NC-SA 4.0. Uso personal sin problema; no distribuir con fines
-  comerciales.
+- **Licencias**: BirdNET+ V3 y su Geomodel, Apache 2.0 (desde la 0.6; V2.4 era CC BY-NC-SA 4.0).
+  Leer su `ACCEPTABLE_USE.txt` del zip de Zenodo si se publica algo.
 - **La clave de xeno-canto** en `local.properties` para desarrollo, nunca en el repositorio.

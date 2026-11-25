@@ -35,7 +35,7 @@
     <string name="background_minutes">Écoute en arrière-plan</string>
     <string name="xc_key">Clé d’API</string>
     <string name="save">Enregistrer</string>
-    <string name="credits">BirdNET (Cornell Lab et TU Chemnitz, CC BY-NC-SA 4.0) · Google AIY Birds V1 · MediaPipe Magic Touch · Wikipedia · xeno-canto</string>
+    <string name="credits">BirdNET+ V3 (Cornell Lab et TU Chemnitz, Apache 2.0) · Google AIY Birds V1 · MediaPipe Magic Touch · Wikipedia · xeno-canto</string>
     <string name="share_audio">Partager les 15 dernières secondes du micro</string>
     <string name="share_audio_hint">En WAV, tel que le reçoit le modèle : utile pour vérifier ce qu’entend le téléphone.</string>
     <string name="share_audio_empty">Pas encore d’audio : écoutez d’abord un moment.</string>
@@ -73,4 +73,16 @@
     <string name="search_clear">Effacer</string>
     <string name="no_info">Impossible de charger la description. Êtes-vous connecté ?</string>
     <string name="xc_failed">Impossible de lire l’enregistrement.</string>
+    <string name="inference_ms">Modèle : %1$d ms par fenêtre</string>
+    <string name="sound_aircraft">Avion</string>
+    <string name="sound_boat">Bateau</string>
+    <string name="sound_chainsaw">Tronçonneuse</string>
+    <string name="sound_explosion">Explosion</string>
+    <string name="sound_fire">Feu</string>
+    <string name="sound_hammer">Marteau</string>
+    <string name="sound_vehicle">Véhicule à moteur</string>
+    <string name="sound_music">Musique</string>
+    <string name="sound_train">Train</string>
+    <string name="sound_sawing">Sciage</string>
+    <string name="sound_horn">Klaxon</string>
 </resources>

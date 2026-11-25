@@ -8,7 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import java.io.File
-import java.nio.ByteBuffer
 import java.time.LocalDate
 import kotlin.math.PI
 import kotlin.math.sin
@@ -16,28 +15,39 @@ import kotlin.math.sin
 private val models = File("src/main/assets/models")
 
 class LocationFilterTest {
-    /**
-     * Mismos números que la referencia en Python (`Tools/`… ver CLAUDE.md), que a su vez casa al
-     * 0,9997 con el modelo oficial de metadatos de BirdNET. Necesita los modelos bajados.
-     */
-    @Test fun matchesReference() {
-        val f = File(models, "meta_weights.bin")
-        assumeTrue(f.exists())
-        val filter = LocationFilter(ByteBuffer.wrap(f.readBytes()))
-        val p = filter.probabilities(40.4168, -3.7038, 20)
-        assertEquals(0.99609, p[6253].toDouble(), 2e-4)   // Turdus merula
-        assertEquals(0.94683, p[423].toDouble(), 2e-4)    // Apus apus: los vencejos llegan en mayo
-        assertEquals(0.44519, p[1315].toDouble(), 2e-4)   // Ciconia ciconia
-        // En Llanes, en enero, los vencejos están en África.
-        assertTrue(filter.probabilities(43.42, -4.75, 4)[423] < 0.01f)
+    // Un Geomodel de mentira con tres especies (en otro orden que el audio): LiteRT no corre en la JVM.
+    private val geoNames = listOf("Apus apus", "Turdus merula", "Cardinalis cardinalis")
+    private fun geo(lat: Float, lon: Float, week: Int) = floatArrayOf(if (week in 18..34) 0.95f else 0.002f, 0.99f, 0.0001f)
+
+    @Test fun `lleva el Geomodel al orden del audio`() {
+        val audio = listOf("Turdus merula", "Erithacus rubecula", "Apus apus", "Cardinalis cardinalis")
+        val toGeo = LocationFilter.mapping(audio, geoNames)
+        assertEquals(listOf(1, -1, 0, 2), toGeo.toList())
+        val f = LocationFilter(toGeo, ::geo)
+        val may = f.probabilities(40.4, -3.7, 20)
+        assertEquals(0.99f, may[0]); assertEquals(0f, may[1]); assertEquals(0.95f, may[2])
+        // En enero los vencejos no están, pero el máximo del año los deja a medias.
+        f.update(40.4, -3.7, LocalDate.of(2026, 1, 10))
+        assertEquals(listOf(1f, LocationFilter.UNKNOWN, 0.5f, 0f), f.metaScores.toList())
+    }
+
+    /** Con los modelos bajados: casi todo el audio tiene su fila en el Geomodel. */
+    @Test fun `el Geomodel conoce casi todas las clases del audio`() {
+        val a = File(models, "labels3.txt"); val g = File(models, "geomodel_labels.txt")
+        assumeTrue(a.exists() && g.exists())
+        val audio = a.readLines().filter { it.isNotBlank() }.map { it.substringBefore('_') }
+        val toGeo = LocationFilter.mapping(audio, g.readLines().filter { it.isNotBlank() }.map { it.split('\t')[1] })
+        assertEquals(11_725, audio.size)
+        assertTrue(toGeo.count { it >= 0 } > 10_500)
+        assertTrue(toGeo[audio.indexOf("Turdus merula")] >= 0)
     }
 
     @Test fun weeksAndSteps() {
         assertEquals(1, LocationFilter.weekOfYear(LocalDate.of(2026, 1, 1)))
         assertEquals(48, LocationFilter.weekOfYear(LocalDate.of(2026, 12, 31)))
         assertEquals(18, LocationFilter.weekOfYear(LocalDate.of(2026, 5, 15)))   // 135/365 × 48 = 17,75 → 18
-        assertEquals(1f, LocationFilter.step(0.02f)); assertEquals(0.8f, LocationFilter.step(0.009f))
-        assertEquals(0.5f, LocationFilter.step(0.002f)); assertEquals(0f, LocationFilter.step(0.0001f))
+        assertEquals(1f, LocationFilter.step(0.2f)); assertEquals(0.8f, LocationFilter.step(0.05f))
+        assertEquals(0.5f, LocationFilter.step(0.02f)); assertEquals(0f, LocationFilter.step(0.005f))
     }
 }
 
@@ -54,18 +64,19 @@ class ScoringTest {
 
     @Test fun sigmoidWithSensitivityThresholdAndLocation() {
         val scorer = Scorer(labels)
-        val logits = floatArrayOf(4f, 0f, -4f)
-        val (above, thinking) = scorer.score(logits, Settings(threshold = 0.35f, sensitivity = 1.3f, locationInfluence = 0f), null)
+        // BirdNET+ V3 da probabilidades: las de los logits 4, 0 y −4.
+        val probs = floatArrayOf(0.98201f, 0.5f, 0.01799f)
+        val (above, thinking) = scorer.score(probs, Settings(threshold = 0.35f, sensitivity = 1.3f, locationInfluence = 0f), null)
         assertEquals(listOf("Turdus merula", "Turdus philomelos"), above.map { it.scientific })   // 0,94 y 0,5
         assertNull(thinking)
         // Con el filtro de lugar al 70 %: una especie que no está aquí (meta 0) baja al 30 %.
-        val (filtered, _) = scorer.score(logits, Settings(threshold = 0.35f, locationInfluence = 0.7f), floatArrayOf(0f, 1f, 1f))
+        val (filtered, _) = scorer.score(probs, Settings(threshold = 0.35f, locationInfluence = 0.7f), floatArrayOf(0f, 1f, 1f))
         assertEquals(listOf("Turdus philomelos"), filtered.map { it.scientific })
     }
 
     @Test fun moreSensitivityLetsFaintSongThrough() {
         // Un canto flojo (logit −0,8): con sensibilidad 1,4 pasa del 35 %; con 0,6, no.
-        val faint = floatArrayOf(-0.8f, -5f, -5f)
+        val faint = floatArrayOf(0.31003f, 0.00669f, 0.00669f)   // probabilidades de los logits −0,8, −5, −5
         val (eager, _) = Scorer(labels).score(faint, Settings(threshold = 0.35f, sensitivity = 1.4f, locationInfluence = 0f), null)
         val (strict, _) = Scorer(labels).score(faint, Settings(threshold = 0.35f, sensitivity = 0.6f, locationInfluence = 0f), null)
         assertEquals(listOf("Turdus merula"), eager.map { it.scientific })
@@ -73,7 +84,7 @@ class ScoringTest {
     }
 
     @Test fun thinkingWhenNothingCrossesTheThreshold() {
-        val (above, thinking) = Scorer(labels).score(floatArrayOf(-1f, -3f, -3f), Settings(threshold = 0.5f), null)
+        val (above, thinking) = Scorer(labels).score(floatArrayOf(0.26894f, 0.04743f, 0.04743f), Settings(threshold = 0.5f), null)   // logits −1, −3, −3
         assertTrue(above.isEmpty())
         assertEquals("Turdus merula", thinking!!.scientific)
     }
@@ -121,7 +132,14 @@ class SignalTest {
         assertEquals("Cuchara común", Labels(en, es, mapOf("Anas clypeata" to "Cuchara común")).nameOf("Anas clypeata"))
     }
 
+    @Test fun `el nombre de las etiquetas manda sobre lo completado`() {
+        val l = Labels(listOf("Pica pica_Eurasian Magpie"), listOf("Pica pica_Urraca común"), mapOf("Pica pica" to "Picaraza"))
+        assertEquals("Urraca común", l.nameOf("Pica pica"))
+    }
+
     @Test fun `los sonidos no son especies`() {
+        assertFalse(Labels.isSpecies("Vehicle horn"))
+        assertFalse(Labels.isSpecies("Homo sapiens"))
         assertTrue(Labels.isSpecies("Turdus merula"))
         assertFalse(Labels.isSpecies("Human vocal"))
         assertFalse(Labels.isSpecies("Fireworks"))
@@ -258,5 +276,42 @@ class ExifDateTest {
         assertNull(exifDate("0000:00:00 00:00:00"))
         assertNull(exifDate("2026:13:40 00:00:00"))
         assertNull(exifDate("ayer"))
+    }
+}
+
+class SignalV3Test {
+    @Test fun `normaliza a un pico de 0,5 y el silencio no se analiza`() {
+        val x = FloatArray(Signal.WINDOW) { if (it == 10) -0.001f else 0.0002f }
+        val n = Signal.normalized(x)!!
+        assertEquals(-0.5f, n[10], 1e-6f); assertEquals(0.1f, n[0], 1e-6f)
+        assertNull(Signal.normalized(FloatArray(Signal.WINDOW)))
+    }
+
+    private fun tone(hz: Double, n: Int, rate: Int) = FloatArray(n) { (0.5 * sin(2 * PI * hz * it / rate)).toFloat() }
+
+    /** Frecuencia dominante por correlación con senos de prueba (basta para ver que no se desafina). */
+    private fun power(x: FloatArray, hz: Double, rate: Int): Double {
+        var re = 0.0; var im = 0.0
+        for (i in x.indices) { re += x[i] * kotlin.math.cos(2 * PI * hz * i / rate); im += x[i] * sin(2 * PI * hz * i / rate) }
+        return (re * re + im * im) / x.size
+    }
+
+    @Test fun `de 48 a 32 kHz conserva el tono y por trozos da lo mismo que de una vez`() {
+        val x = tone(3000.0, 48_000, 48_000)
+        val whole = Resampler().process(x)
+        val r = Resampler()
+        val parts = (0 until 10).flatMap { r.process(x.copyOfRange(it * 4800, (it + 1) * 4800)).toList() }
+        assertTrue(kotlin.math.abs(whole.size - 32_000) < 40)
+        assertEquals(whole.size, parts.size)
+        for (i in whole.indices) assertEquals(whole[i], parts[i], 1e-5f)
+        val mid = whole.copyOfRange(1000, 31_000)
+        assertTrue(power(mid, 3000.0, 32_000) > 100 * power(mid, 2000.0, 32_000))
+        assertEquals(0.5, mid.maxOf { kotlin.math.abs(it) }.toDouble(), 0.02)
+    }
+
+    @Test fun `lo que pasa de 16 kHz no se cuela como otro tono`() {
+        // 20 kHz a 48 kHz se doblaría a 12 kHz al bajar a 32 kHz sin paso bajo.
+        val out = Resampler().process(tone(20_000.0, 48_000, 48_000)).copyOfRange(1000, 31_000)
+        assertTrue(out.maxOf { kotlin.math.abs(it) } < 0.02f)
     }
 }

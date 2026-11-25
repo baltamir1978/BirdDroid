@@ -263,6 +263,10 @@ private fun ListenScreen(onOpen: (Detection) -> Unit) {
                     else -> stringResource(R.string.listening)
                 }, Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                     color = if (state.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                // Para ver si el móvil va sobrado con BirdNET+ V3 (unas 10 veces más cálculo que V2.4).
+                if (state.listening && state.inferenceMs > 0) Text(stringResource(R.string.inference_ms, state.inferenceMs),
+                    Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline)
             }
             if (state.candidates.isNotEmpty()) item {
                 Card {

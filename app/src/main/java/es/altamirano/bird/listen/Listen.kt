@@ -18,6 +18,7 @@ import es.altamirano.bird.R
 import es.altamirano.bird.app
 import es.altamirano.bird.lastLocation
 import es.altamirano.bird.core.Candidate
+import es.altamirano.bird.core.Resampler
 import es.altamirano.bird.core.Scorer
 import es.altamirano.bird.core.Signal
 import es.altamirano.bird.data.toDetection
@@ -47,6 +48,8 @@ data class ListenState(
     val candidates: List<Candidate> = emptyList(),
     val level: Float = 0f,
     val error: String? = null,
+    /** Lo que tarda el modelo por ventana (ms): con una cada 0,8 s, por encima de ~800 no da abasto. */
+    val inferenceMs: Long = 0,
 )
 
 object ListenBus {
@@ -108,13 +111,13 @@ class ListenService : Service() {
         val app = applicationContext.app
         val scorer = Scorer(app.models.labels)
         // UNPROCESSED: el audio tal cual, sin el procesado del sistema (como `.measurement` en iOS).
-        // Llega flojo porque no hay control automático de ganancia, pero a BirdNET le da igual: normaliza
-        // cada ventana (comprobado: el mismo logit con el audio a 1/10.000). Lo que sí le estorbaría es
-        // la supresión de ruido de las fuentes de voz, que se come los cantos.
-        val format = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_FLOAT).setSampleRate(Signal.RATE)
+        // Llega flojo porque no hay control automático de ganancia; cada ventana se normaliza antes del
+        // modelo (`Signal.normalized`). Lo que sí le estorbaría es la supresión de ruido de las fuentes
+        // de voz, que se come los cantos. Se graba a 48 kHz (lo nativo) y se pasa a 32 kHz aquí.
+        val format = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_FLOAT).setSampleRate(Signal.CAPTURE_RATE)
             .setChannelMask(AudioFormat.CHANNEL_IN_MONO).build()
-        val minBuf = AudioRecord.getMinBufferSize(Signal.RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT)
-        val bufBytes = maxOf(minBuf, Signal.RATE * 4 * 4)           // 4 s de margen
+        val minBuf = AudioRecord.getMinBufferSize(Signal.CAPTURE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT)
+        val bufBytes = maxOf(minBuf, Signal.CAPTURE_RATE * 4 * 4)   // 4 s de margen
         fun build(source: Int) = runCatching {
             AudioRecord.Builder().setAudioSource(source).setAudioFormat(format).setBufferSizeInBytes(bufBytes).build()
                 .also { if (it.state != AudioRecord.STATE_INITIALIZED) { it.release(); error("sin iniciar") } }
@@ -134,15 +137,17 @@ class ListenService : Service() {
         rec.startRecording()
         try {
             withContext(Dispatchers.IO) {
-                val chunk = FloatArray(Signal.RATE / 10)
+                val chunk = FloatArray(Signal.CAPTURE_RATE / 10)
+                val resampler = Resampler()
                 while (isActive) {
                     val n = rec.read(chunk, 0, chunk.size, AudioRecord.READ_BLOCKING)
                     if (n <= 0) continue
-                    val part = chunk.copyOf(n)
+                    val part = resampler.process(chunk.copyOf(n))
+                    if (part.isEmpty()) continue
                     var sum = 0.0; for (v in part) sum += v * v
-                    ListenBus.state.update { it.copy(level = kotlin.math.sqrt(sum / n).toFloat()) }
+                    ListenBus.state.update { it.copy(level = kotlin.math.sqrt(sum / part.size).toFloat()) }
                     ListenBus.addRecent(part)
-                    pending.addAndGet(n); chunks.trySend(part)
+                    pending.addAndGet(part.size); chunks.trySend(part)
                     autoStopInBackground(app.prefs.backgroundMinutes)
                 }
             }
@@ -203,12 +208,13 @@ class ListenService : Service() {
         if (s.signalGate && !Signal.hasBirdSignal(window)) { idle(); return }
         ListenBus.state.update { it.copy(analyzing = true) }
         val input = if (s.highPass) Signal.highPass(window, s.highPassCutoff) else window
-        val logits = app.models.birdnet(input)
+        val probs = app.models.birdnet(input)
+        ListenBus.state.update { it.copy(inferenceMs = app.models.lastInferenceMs) }
         val where = lastLocation()
         val meta = if (where != null && s.locationInfluence > 0) {
             app.models.filter.update(where.first, where.second, LocalDate.now()); app.models.filter.metaScores
         } else null
-        val (cands, thinking) = scorer.score(logits, s, meta)
+        val (cands, thinking) = scorer.score(probs, s, meta)
         if (cands.isNotEmpty()) {
             val d = cands.toDetection(where?.first, where?.second, photo = false)
             ListenBus.state.update { it.copy(analyzing = false, thinking = null, candidates = cands) }

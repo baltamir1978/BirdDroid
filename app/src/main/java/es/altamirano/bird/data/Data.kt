@@ -8,6 +8,7 @@ import es.altamirano.bird.core.FUSION_WINDOW_S
 import es.altamirano.bird.core.Framing
 import es.altamirano.bird.core.Labels
 import es.altamirano.bird.core.LocationFilter
+import es.altamirano.bird.core.Signal
 import es.altamirano.bird.core.Settings
 import es.altamirano.bird.core.SpeciesSearch
 import es.altamirano.bird.core.TIEBREAK_RATIO
@@ -134,17 +135,25 @@ class Prefs(context: Context) {
         set(v) { p.edit().putInt("fondo_min", v).apply() }
 }
 
-/** Los sonidos que no son especies: en las etiquetas de BirdNET vienen en inglés en casi todos los idiomas. */
+/**
+ * Los sonidos que no son especies: en las etiquetas de BirdNET vienen en inglés en casi todos los
+ * idiomas. Los de BirdNET+ V3 y, por lo que quede en el historial, los de V2.4.
+ */
 private val SOUNDS = mapOf(
-    "Dog" to R.string.sound_dog, "Engine" to R.string.sound_engine, "Environmental" to R.string.sound_environmental,
-    "Fireworks" to R.string.sound_fireworks, "Gun" to R.string.sound_gun, "Human non-vocal" to R.string.sound_human,
+    "Aircraft" to R.string.sound_aircraft, "Boat" to R.string.sound_boat, "Chainsaw" to R.string.sound_chainsaw,
+    "Engine" to R.string.sound_engine, "Explosion" to R.string.sound_explosion, "Fire" to R.string.sound_fire,
+    "Fireworks" to R.string.sound_fireworks, "Gun" to R.string.sound_gun, "Hammer" to R.string.sound_hammer,
+    "Motor vehicle" to R.string.sound_vehicle, "Music" to R.string.sound_music, "Power tool" to R.string.sound_tools,
+    "Sawing" to R.string.sound_sawing, "Siren" to R.string.sound_siren, "Train" to R.string.sound_train,
+    "Vehicle horn" to R.string.sound_horn,
+    "Dog" to R.string.sound_dog, "Environmental" to R.string.sound_environmental, "Human non-vocal" to R.string.sound_human,
     "Human vocal" to R.string.sound_voice, "Human whistle" to R.string.sound_whistle, "Noise" to R.string.sound_noise,
-    "Power tools" to R.string.sound_tools, "Siren" to R.string.sound_siren,
+    "Power tools" to R.string.sound_tools,
 )
 
 /**
  * Los modelos, con LiteRT **empaquetado en la app** (no el de Google Play Services: GrapheneOS).
- * BirdNET completo recibe el audio tal cual (48 kHz, 3 s): no hace falta el espectrograma de iOS.
+ * BirdNET+ V3 recibe el audio tal cual (32 kHz, 3 s): el espectrograma lo hace el propio modelo.
  */
 class Models(private val context: Context) {
     private fun map(name: String): MappedByteBuffer = context.assets.openFd("models/$name").use { fd ->
@@ -153,10 +162,10 @@ class Models(private val context: Context) {
 
     val labels: Labels by lazy {
         val lang = Locale.getDefault().language
-        val file = when (lang) { "es", "de", "fr", "it" -> "labels_$lang.txt"; "pt" -> "labels_pt_PT.txt"; else -> null }
+        val file = if (lang in setOf("es", "de", "fr", "it", "pt")) "labels3_$lang.txt" else null
         // Lo que las etiquetas oficiales dejan en inglés (Tools/completar-nombres.py) y los sonidos.
         val completed = if (file == null) emptyMap() else completedNames(lang)
-        Labels(read("labels.txt"), file?.let { runCatching { read(it) }.getOrNull() }, completed + SOUNDS.mapValues { context.getString(it.value) })
+        Labels(read("labels3.txt"), file?.let { runCatching { read(it) }.getOrNull() }, completed + SOUNDS.mapValues { context.getString(it.value) })
     }
     private fun read(name: String) = context.assets.open("models/$name").bufferedReader().readLines()
     private fun completedNames(lang: String): Map<String, String> = runCatching {
@@ -165,22 +174,51 @@ class Models(private val context: Context) {
 
     /** Buscar: los nombres en español valen sea cual sea el idioma del móvil. */
     val search: SpeciesSearch by lazy {
-        val spanish = read("labels_es.txt").filter { '_' in it }.associate { it.substringBefore('_') to it.substringAfter('_') } + completedNames("es")
+        val spanish = read("labels3_es.txt").filter { '_' in it }.associate { it.substringBefore('_') to it.substringAfter('_') } + completedNames("es")
         val spain = context.assets.open("nombres/es-espana.txt").bufferedReader().readLines().filter { it.isNotBlank() }
             .map { it.split('|') }.associate { it[0] to it.drop(1) }
         SpeciesSearch(labels, spanish, spain)
     }
 
-    val filter: LocationFilter by lazy { LocationFilter(map("meta_weights.bin")) }
+    // --- Lugar y semana: Geomodel de BirdNET+ V3 ([lat, lon, semana] → 14.057 especies) ----------
 
-    private val birdnet: Interpreter by lazy { Interpreter(map("birdnet.tflite"), Interpreter.Options().setNumThreads(2)) }
-    private val output = Array(1) { FloatArray(6522) }
+    private val geomodel: Interpreter by lazy { Interpreter(map("geomodel.tflite"), Interpreter.Options().setNumThreads(2)) }
+    private val geoOutput by lazy { Array(1) { FloatArray(geomodel.getOutputTensor(0).shape()[1]) } }
 
-    /** Los logits de las 6.522 especies para una ventana de 3 s. */
+    val filter: LocationFilter by lazy {
+        val geoNames = read("geomodel_labels.txt").filter { it.isNotBlank() }.map { it.split('\t')[1] }
+        LocationFilter(LocationFilter.mapping(labels.scientific, geoNames)) { lat, lon, week ->
+            synchronized(geomodel) { geomodel.run(arrayOf(floatArrayOf(lat, lon, week.toFloat())), geoOutput); geoOutput[0].copyOf() }
+        }
+    }
+
+    // --- El canto: BirdNET+ V3.0.1, recortado para móviles (una de sus tres cabezas) -----------
+
+    private val birdnet: Interpreter by lazy {
+        Interpreter(map("birdnet3.tflite"), Interpreter.Options().setNumThreads(2)).apply {
+            // La entrada viene como [1, 1]: hay que darle el tamaño de la ventana antes de usarlo.
+            resizeInput(0, intArrayOf(1, Signal.WINDOW)); allocateTensors()
+        }
+    }
+    /** Da dos salidas (las puntuaciones y un embebido de 1.280) y el orden no está garantizado: se busca por tamaño. */
+    private val scoresOutput: Int by lazy { (0 until birdnet.outputTensorCount).first { birdnet.getOutputTensor(it).shape().last() == labels.size } }
+    private val outputs by lazy { (0 until birdnet.outputTensorCount).associateWith { Array(1) { FloatArray(birdnet.getOutputTensor(it).shape().last()) } } }
+
+    /** Lo que tardó la última ventana, para ver si el móvil va sobrado (se enseña al escuchar). */
+    @Volatile var lastInferenceMs = 0L; private set
+
+    /**
+     * La probabilidad (0–1) de cada una de las 11.725 clases para una ventana de 3 s a 32 kHz.
+     * El silencio digital da todo a 0 sin pasar por el modelo (ver [Signal.normalized]).
+     */
     @Synchronized
     fun birdnet(window: FloatArray): FloatArray {
-        birdnet.run(arrayOf(window), output)
-        return output[0].copyOf()
+        val input = Signal.normalized(window) ?: return FloatArray(labels.size)
+        val t0 = android.os.SystemClock.elapsedRealtime()
+        @Suppress("UNCHECKED_CAST")
+        birdnet.runForMultipleInputsOutputs(arrayOf(arrayOf(input)), outputs as Map<Int, Any>)
+        lastInferenceMs = android.os.SystemClock.elapsedRealtime() - t0
+        return outputs.getValue(scoresOutput)[0].copyOf()
     }
 
     // --- Fotos: Google AIY Birds V1 (224×224 RGB, cuantizado) ------------------------------

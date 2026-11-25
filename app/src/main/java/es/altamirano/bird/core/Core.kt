@@ -7,10 +7,11 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-/** Las 6.522 especies de BirdNET: «Científico_Común» por fila; la fila es la clase del modelo. */
+/** Las 11.725 clases de BirdNET+ V3: «Científico_Común» por fila; la fila es la clase del modelo. */
 class Labels(lines: List<String>, localized: List<String>?, private val extra: Map<String, String> = emptyMap()) {
     val scientific: List<String>
     val common: List<String>
@@ -28,16 +29,26 @@ class Labels(lines: List<String>, localized: List<String>?, private val extra: M
 
     val size get() = scientific.size
     fun row(scientificName: String): Int? = index[scientificName.lowercase()] ?: index[binomial(scientificName).lowercase()]
-    fun displayName(i: Int): String = extra[scientific[i]]
-        ?: localizedCommon?.getOrNull(i)?.takeIf { it.isNotBlank() && !it.equals(scientific[i], true) } ?: common[i]
+    /**
+     * El nombre en el idioma del móvil. Manda el de las etiquetas; lo completado ([extra]) sólo si
+     * las etiquetas lo dejan en inglés (en los ficheros, lo que falta va con el nombre inglés).
+     */
+    fun displayName(i: Int): String = localizedCommon?.getOrNull(i)
+        ?.takeIf { it.isNotBlank() && !it.equals(scientific[i], true) && it != common[i] }
+        ?: extra[scientific[i]] ?: common[i]
 
     /** El nombre en el idioma actual, o null si no se conoce (especies de fotos que BirdNET no tiene). */
     fun nameOf(scientificName: String): String? = row(scientificName)?.let(::displayName) ?: extra[binomial(scientificName)]
 
     companion object {
-        /** Las clases de BirdNET que son sonidos y no especies: no tienen ficha, foto ni canto. */
-        val NON_SPECIES = setOf("Dog", "Engine", "Environmental", "Fireworks", "Gun", "Human non-vocal", "Human vocal",
-            "Human whistle", "Noise", "Power tools", "Siren")
+        /**
+         * Las clases de BirdNET que son sonidos y no especies: no tienen ficha, foto ni canto. Las de
+         * BirdNET+ V3 (`taxon_group` Anthropogenic, Geophony y Music) y, por el historial, las de V2.4.
+         * El ser humano también: su «canto» no está en xeno-canto.
+         */
+        val NON_SPECIES = setOf("Aircraft", "Boat", "Chainsaw", "Engine", "Explosion", "Fire", "Fireworks", "Gun", "Hammer",
+            "Motor vehicle", "Music", "Power tool", "Sawing", "Siren", "Train", "Vehicle horn", "Homo sapiens",
+            "Dog", "Environmental", "Human non-vocal", "Human vocal", "Human whistle", "Noise", "Power tools")
 
         fun isSpecies(scientificName: String) = scientificName !in NON_SPECIES
 
@@ -103,96 +114,65 @@ class SpeciesSearch(labels: Labels, spanish: Map<String, String>, spain: Map<Str
 }
 
 /**
- * El filtro por lugar y semana de BirdNET v2.4, traducido de `LocationFilter.swift` con los mismos
- * pesos (`meta_weights.bin`): da los mismos números que la app de iOS.
- *
- *   [lat, lon, semana] → embebido de Fourier (144) → 256 → 512 → 1024 (ReLU) → 6522 → sigmoide
+ * El filtro por lugar y semana: el Geomodel de BirdNET+ V3 ([geo]: latitud, longitud y semana de
+ * 1 a 48 → probabilidad de cada una de sus especies), llevado al orden del modelo de audio con
+ * [toGeo] (fila de audio → fila del Geomodel, o −1 si no la tiene).
  *
  * El filtro suave es el de whoBIRD: la probabilidad se pasa a escalones (1 / 0,8 / 0,5 / 0) y se
- * mezcla al 50 % con el máximo del año (ayuda con las migratorias).
+ * mezcla al 50 % con el máximo del año (ayuda con las migratorias). Lo que el Geomodel no conoce
+ * (unas 800 clases, casi todas de islas lejanas y del trópico) queda a medias.
  */
-class LocationFilter(bytes: ByteBuffer) {
-    private val w1: FloatArray; private val b1: FloatArray
-    private val w2: FloatArray; private val b2: FloatArray
-    private val w3: FloatArray; private val b3: FloatArray
-    private val w4: FloatArray; private val b4: FloatArray
-    val numClasses = 6522
+class LocationFilter(private val toGeo: IntArray, private val geo: (lat: Float, lon: Float, week: Int) -> FloatArray) {
+    val numClasses get() = toGeo.size
 
     var metaScores: FloatArray = FloatArray(0); private set
     private var cacheKey: String? = null
 
-    init {
-        val buf = bytes.duplicate().order(ByteOrder.LITTLE_ENDIAN)
-        require(buf.get(0) == 0x42.toByte() && buf.get(1) == 0x4D.toByte() && buf.get(2) == 0x45.toByte() && buf.get(3) == 0x54.toByte()) { "meta_weights.bin no es válido" }
-        buf.position(8)
-        val fb = buf.asFloatBuffer()
-        fun read(n: Int) = FloatArray(n).also { fb.get(it) }
-        read(48)                                    // bloque de frecuencias antiguo, sin uso
-        w1 = read(256 * 144); b1 = read(256)
-        w2 = read(512 * 256); b2 = read(512)
-        w3 = read(1024 * 512); b3 = read(1024)
-        w4 = read(6522 * 1024); b4 = read(6522)
-    }
-
     /** Recalcula sólo si cambian la posición redondeada o la semana. */
+    @Synchronized
     fun update(lat: Double, lon: Double, date: LocalDate) {
         val week = weekOfYear(date)
         val key = "${Math.round(lat * 100)}_${Math.round(lon * 100)}_$week"
         if (key == cacheKey) return
-        cacheKey = key
         val current = probabilities(lat, lon, week)
         val annualMax = FloatArray(numClasses)
         for (w in 1..48) {
             val p = probabilities(lat, lon, w)
             for (i in 0 until numClasses) if (p[i] > annualMax[i]) annualMax[i] = p[i]
         }
-        metaScores = FloatArray(numClasses) { 0.5f * step(current[it]) + 0.5f * step(annualMax[it]) }
+        metaScores = FloatArray(numClasses) { if (toGeo[it] < 0) UNKNOWN else 0.5f * step(current[it]) + 0.5f * step(annualMax[it]) }
+        cacheKey = key
     }
 
+    /** Probabilidad de cada clase de audio (0 si el Geomodel no la tiene). */
     fun probabilities(lat: Double, lon: Double, week: Int): FloatArray {
-        val h1 = linear(w1, b1, 256, 144, embedding(lat, lon, week)).relu()
-        val h2 = linear(w2, b2, 512, 256, h1).relu()
-        val h3 = linear(w3, b3, 1024, 512, h2).relu()
-        val logits = linear(w4, b4, numClasses, 1024, h3)
-        for (i in logits.indices) logits[i] = (1 / (1 + exp(-logits[i].toDouble()))).toFloat()
-        return logits
+        val g = geo(lat.toFloat(), lon.toFloat(), week)
+        return FloatArray(numClasses) { toGeo[it].let { j -> if (j >= 0) g[j] else 0f } }
     }
-
-    /** emb[i] = √2 · sin(2π·n + i·π/48) para latitud, longitud y semana normalizadas. */
-    private fun embedding(lat: Double, lon: Double, week: Int): FloatArray {
-        val latN = ((lat + 90) / 180).toFloat(); val lonN = ((lon + 180) / 360).toFloat(); val weekN = week / 48f
-        val twoPi = 2 * PI.toFloat(); val step = PI.toFloat() / 48; val sqrt2 = sqrt(2f)
-        val f = FloatArray(144)
-        for (i in 0 until 48) {
-            val phase = i * step
-            f[i] = sqrt2 * sin(latN * twoPi + phase)
-            f[i + 48] = sqrt2 * sin(lonN * twoPi + phase)
-            f[i + 96] = sqrt2 * sin(weekN * twoPi + phase)
-        }
-        return f
-    }
-
-    private fun linear(w: FloatArray, b: FloatArray, rows: Int, cols: Int, x: FloatArray): FloatArray {
-        val y = FloatArray(rows)
-        for (r in 0 until rows) {
-            var acc = 0f; val base = r * cols
-            for (c in 0 until cols) acc += w[base + c] * x[c]
-            y[r] = acc + b[r]
-        }
-        return y
-    }
-
-    private fun FloatArray.relu() = apply { for (i in indices) if (this[i] < 0) this[i] = 0f }
 
     companion object {
-        fun step(p: Float): Float = when { p >= 0.01f -> 1f; p >= 0.008f -> 0.8f; p >= 0.001f -> 0.5f; else -> 0f }
+        /** Lo que el Geomodel no tiene: ni se premia ni se descarta. */
+        const val UNKNOWN = 0.5f
+
+        /**
+         * El Geomodel V3 es muy tajante (en Madrid, lo que vive allí sale por encima de 0,9 y lo de
+         * otros continentes por debajo de 0,001), así que los escalones van más altos que con el de
+         * V2.4 (0,01 / 0,008 / 0,001).
+         */
+        fun step(p: Float): Float = when { p >= 0.1f -> 1f; p >= 0.03f -> 0.8f; p >= 0.01f -> 0.5f; else -> 0f }
 
         /** Semana de 1 a 48, como en iOS: día del año entre días del año, por 48, hacia arriba. */
         fun weekOfYear(d: LocalDate): Int = Math.ceil(d.dayOfYear.toDouble() / d.lengthOfYear() * 48).toInt().coerceIn(1, 48)
+
+        /** Fila de audio → fila del Geomodel, por el nombre científico (los dos usan la taxonomía de BirdNET+). */
+        fun mapping(audio: List<String>, geo: List<String>): IntArray {
+            val index = geo.withIndex().associate { (i, s) -> s.lowercase() to i }
+            return IntArray(audio.size) { index[audio[it].lowercase()] ?: -1 }
+        }
     }
 }
 
-// --- El canto: de los logits del modelo a candidatos ---------------------------------------
+// --- El canto: de lo que da el modelo a candidatos ---------------------------------------
 
 data class Settings(
     val threshold: Float = 0.35f,            // confianza mínima
@@ -222,10 +202,14 @@ class Scorer(private val labels: Labels) {
     /**
      * Sensibilidad (BirdNET-Analyzer), filtro suave de lugar (whoBIRD) y suavizado opcional.
      * Devuelve los candidatos por encima del umbral, o el mejor por debajo como «pensando».
+     *
+     * BirdNET+ V3 ya da probabilidades (V2.4 daba logits): se vuelven a logit para aplicar la
+     * pendiente de la sensibilidad, así el ajuste sigue haciendo lo mismo.
      */
-    fun score(logits: FloatArray, s: Settings, meta: FloatArray?): Pair<List<Candidate>, Candidate?> {
-        val combined = FloatArray(logits.size) { i ->
-            var p = (1 / (1 + exp(-s.slope * logits[i].toDouble()))).toFloat()
+    fun score(probs: FloatArray, s: Settings, meta: FloatArray?): Pair<List<Candidate>, Candidate?> {
+        val combined = FloatArray(probs.size) { i ->
+            val q = probs[i].toDouble().coerceIn(1e-7, 1 - 1e-7)
+            var p = (1 / (1 + exp(-s.slope * ln(q / (1 - q))))).toFloat()
             if (meta != null && s.locationInfluence > 0 && i < meta.size) p *= (1 - s.locationInfluence) + s.locationInfluence * meta[i]
             p
         }
@@ -242,9 +226,26 @@ class Scorer(private val labels: Labels) {
 }
 
 object Signal {
-    const val RATE = 48_000
-    const val WINDOW = 144_000      // 3 s
-    const val HOP = 38_400          // 0,8 s: ~73 % de solape (como whoBIRD)
+    /** Lo que espera BirdNET+ V3 (V2.4 quería 48 kHz). */
+    const val RATE = 32_000
+    /** Lo que da el micrófono sin remuestrear (el nativo de los Pixel); se pasa a [RATE] con [Resampler]. */
+    const val CAPTURE_RATE = 48_000
+    const val WINDOW = 96_000       // 3 s
+    const val HOP = 25_600          // 0,8 s: ~73 % de solape (como whoBIRD)
+
+    /**
+     * La ventana a un pico de 0,5, o null si es silencio digital. V2.4 normalizaba por dentro y le
+     * daba igual el volumen; V3 no del todo: con el audio a 1/10.000 (lo flojo que llega UNPROCESSED,
+     * sin control de ganancia) un mirlo bajaba de 0,87 a 0,31. Y con silencio puro el modelo recortado
+     * se inventa algo al 0,25, así que eso ni se analiza.
+     */
+    fun normalized(x: FloatArray): FloatArray? {
+        var peak = 0f
+        for (v in x) { val a = abs(v); if (a > peak) peak = a }
+        if (peak < 1e-5f) return null
+        val k = 0.5f / peak
+        return FloatArray(x.size) { x[it] * k }
+    }
 
     /** Nivel en dBFS (0 = el máximo). BirdNET no depende del volumen: esto es sólo para verlo. */
     fun dbfs(rms: Float): Float = if (rms <= 1e-7f) -140f else 20 * kotlin.math.log10(rms)
@@ -283,6 +284,51 @@ object Signal {
         }
         return y
     }
+}
+
+/**
+ * De 48 a 32 kHz (2/3) por trozos, sin saltos entre uno y otro: cada muestra de salida es la
+ * interpolación con un sinc enventanado (Blackman, 2×[HALF] puntos) de la entrada en t = n·1,5,
+ * con un paso bajo a ~14,4 kHz (por debajo de los 16 kHz de Nyquist de la salida). Pedir 32 kHz a
+ * `AudioRecord` también valdría, pero con la fuente UNPROCESSED no todos los móviles lo aceptan, y
+ * entonces se caería al micrófono con supresión de ruido, que se come los cantos.
+ */
+class Resampler(private val inRate: Int = Signal.CAPTURE_RATE, private val outRate: Int = Signal.RATE) {
+    private val ratio = inRate.toDouble() / outRate
+    private val cutoff = 0.9 * outRate / (2.0 * inRate)  // 14,4 kHz en ciclos por muestra de entrada (0,3)
+    private var buf = FloatArray(0)                     // entrada pendiente (con HALF de historia delante)
+    private var t = HALF.toDouble()                     // posición de la siguiente salida dentro de buf
+    private val kernels = HashMap<Long, DoubleArray>()
+
+    init { buf = FloatArray(HALF) }                     // historia de ceros al empezar
+
+    fun process(x: FloatArray): FloatArray {
+        buf += x
+        val out = ArrayList<Float>((x.size / ratio).toInt() + 2)
+        while (t + HALF < buf.size) {
+            val c = t.toInt(); val frac = t - c
+            // De 48 a 32 kHz sólo hay dos desfases (0 y 0,5): los coeficientes se calculan una vez.
+            val taps = kernels.getOrPut(Math.round(frac * 1e6)) { DoubleArray(2 * HALF) { kernel(it - HALF + 1 - frac) } }
+            var acc = 0.0
+            for (k in taps.indices) acc += buf[c - HALF + 1 + k] * taps[k]
+            out += acc.toFloat()
+            t += ratio
+        }
+        // Se queda con lo necesario para la siguiente vuelta.
+        val keep = (t.toInt() - HALF).coerceAtLeast(0)
+        buf = buf.copyOfRange(keep, buf.size); t -= keep
+        return out.toFloatArray()
+    }
+
+    private fun kernel(d: Double): Double {
+        if (abs(d) >= HALF) return 0.0
+        val x = 2 * cutoff * d
+        val sinc = if (abs(x) < 1e-9) 1.0 else sin(PI * x) / (PI * x)
+        val w = 0.42 + 0.5 * cos(PI * d / HALF) + 0.08 * cos(2 * PI * d / HALF)
+        return 2 * cutoff * sinc * w
+    }
+
+    private companion object { const val HALF = 24 }
 }
 
 // --- Desempate y fusión audio ↔ foto -------------------------------------------------------
