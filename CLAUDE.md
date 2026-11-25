@@ -18,7 +18,7 @@ deja un audio en `/sdcard/Android/data/es.altamirano.bird/files/robin48.f32` (mo
 48 kHz; con `ffmpeg -i canto.ogg -ac 1 -ar 48000 -f f32le robin48.f32`), lo pasa por el mismo
 camino que el micrófono. Con un petirrojo de Wikimedia (XC124862, 12 s): 12 ventanas de 12
 «Erithacus rubecula», ~290 ms por ventana en caliente (la primera, ~900) en el emulador del
-portátil con 2 hilos. **Sin probar en el móvil.** APK en `~/Documentos/Software/BirdDroid-0.6.1.apk`.
+portátil con 2 hilos. **Probada en el móvil (25-nov-2026):** Bruno mide **menos de 100 ms por ventana**, de sobra para escuchar en directo: V3 se queda y no hace falta volver a V2.4 (la batería escuchando no la ha medido). También confirma que **la pestaña Buscar funciona** (0.5). APK en `~/Documentos/Software/BirdDroid-0.6.1.apk`.
 
 **0.6.0 (25-nov-2026): BirdNET+ V3.** (En el móvil fallaba al analizar: ver la 0.6.1.) Lo pidió Bruno («dale») tras ver que había modelo nuevo: el
 plan es medir en el móvil cuánto tarda y cuánta batería gasta escuchando y, si es demasiado,
@@ -101,8 +101,8 @@ especie en 10 min, **desempate** cuando el segundo queda al 65 % o más, fotos (
 arrastrando un recuadro, EXIF (sitio y fecha para el filtro), **fusión audio↔foto** (lo oído en
 10 min sube y se renormaliza), ficha de Wikipedia, canto de xeno-canto (con clave), ajustes.
 
-Falta: el modelo ibérico de iOS, widgets, accesos directos, y probar en el móvil (sobre todo si la ubicación del EXIF llega
-con fotos compartidas desde Google Fotos).
+Falta: el modelo ibérico de iOS, widgets, accesos directos, y confirmar en el móvil si la ubicación del EXIF llega
+con fotos compartidas desde Google Fotos (lo demás, probado por Bruno el 25-nov-2026).
 
 **Los modelos no van en el repositorio** (decidido el 5-nov-2026; el plan era Git LFS, pero aquí
 no había `git-lfs` y se prefirió no instalar binarios de fuera): `Tools/descargar-modelos.sh`
