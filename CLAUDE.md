@@ -58,6 +58,10 @@ con fotos compartidas desde Google Fotos).
 no había `git-lfs` y se prefirió no instalar binarios de fuera): `Tools/descargar-modelos.sh`
 los baja de sus fuentes oficiales a `app/src/main/assets/models/` (en `.gitignore`), y la
 compilación avisa si faltan.
+**Git LFS descartado del todo el 25-nov-2026** (Bruno): el script y la caché de CI bastan. Por si
+alguna fuente desaparece (Kaggle es la más frágil), hay copia de los modelos en
+`~/Documentos/Software/ModelosBirdDroid` (Syncthing la lleva a `plex`): si `descargar-modelos.sh`
+falla, copiar de ahí a `app/src/main/assets/models/`. Si se cambia de modelo, actualizar la copia.
 
 ## La especificación es el original
 
@@ -98,8 +102,8 @@ hace, todo **en el dispositivo**:
 - **La ubicación del EXIF viene borrada** salvo que la app tenga `ACCESS_MEDIA_LOCATION` y pida el
   original (`MediaStore.setRequireOriginal`). Con fotos compartidas desde Google Fotos puede llegar
   sin ubicación igualmente: comprobarlo en el móvil, porque el filtro por lugar depende de ello.
-- **Los modelos pesan** (~50 MB el de BirdNET): Git LFS desde el primer commit, como se recomendó en
-  el original.
+- **Los modelos pesan** (~50 MB el de BirdNET): el original recomendaba Git LFS; aquí se bajan con
+  `Tools/descargar-modelos.sh` (ver arriba).
 - **Licencia de BirdNET**: CC BY-NC-SA 4.0. Uso personal sin problema; no distribuir con fines
   comerciales.
 - **La clave de xeno-canto** en `local.properties` para desarrollo, nunca en el repositorio.
