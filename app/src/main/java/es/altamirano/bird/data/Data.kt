@@ -202,7 +202,10 @@ class Models(private val context: Context) {
     }
     /** Da dos salidas (las puntuaciones y un embebido de 1.280) y el orden no está garantizado: se busca por tamaño. */
     private val scoresOutput: Int by lazy { (0 until birdnet.outputTensorCount).first { birdnet.getOutputTensor(it).shape().last() == labels.size } }
-    private val outputs by lazy { (0 until birdnet.outputTensorCount).associateWith { Array(1) { FloatArray(birdnet.getOutputTensor(it).shape().last()) } } }
+    // Ojo con `it`: dentro de `Array(1) { }` es el índice del array (0), no el de la salida (así falló la 0.6.0).
+    private val outputs by lazy {
+        (0 until birdnet.outputTensorCount).associateWith { i -> Array(1) { FloatArray(birdnet.getOutputTensor(i).shape().last()) } }
+    }
 
     /** Lo que tardó la última ventana, para ver si el móvil va sobrado (se enseña al escuchar). */
     @Volatile var lastInferenceMs = 0L; private set

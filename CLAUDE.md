@@ -6,7 +6,21 @@ la carpeta de proyectos; aquí va lo propio de esta.
 
 ## Estado (25-nov-2026)
 
-**0.6.0 (25-nov-2026): BirdNET+ V3.** Lo pidió Bruno («dale») tras ver que había modelo nuevo: el
+**0.6.1 (25-nov-2026): la 0.6.0 no escuchaba.** En el móvil, «El análisis ha fallado: escucha
+detenida» a la primera ventana. Las dos salidas del modelo se creaban del mismo tamaño: en
+`Array(1) { FloatArray(…shape(it)…) }` el `it` es el índice del array (siempre 0), no el de la
+salida, y LiteRT no podía copiar el embebido (1.280) en un hueco de 11.725. En Python no se veía
+porque allí se leen las salidas de otra forma. **Ahora hay prueba instrumentada**
+(`app/src/androidTest/…/ModelsTest.kt`) con el LiteRT de la app: la versión de depuración lleva
+también x86_64 para el emulador (la release sigue sólo arm64), y con el AVD `prueba` arrancado
+`./gradlew connectedDebugAndroidTest` carga los dos modelos, mira el Geomodel en Madrid y, si se
+deja un audio en `/sdcard/Android/data/es.altamirano.bird/files/robin48.f32` (mono, float32,
+48 kHz; con `ffmpeg -i canto.ogg -ac 1 -ar 48000 -f f32le robin48.f32`), lo pasa por el mismo
+camino que el micrófono. Con un petirrojo de Wikimedia (XC124862, 12 s): 12 ventanas de 12
+«Erithacus rubecula», ~290 ms por ventana en caliente (la primera, ~900) en el emulador del
+portátil con 2 hilos. **Sin probar en el móvil.** APK en `~/Documentos/Software/BirdDroid-0.6.1.apk`.
+
+**0.6.0 (25-nov-2026): BirdNET+ V3.** (En el móvil fallaba al analizar: ver la 0.6.1.) Lo pidió Bruno («dale») tras ver que había modelo nuevo: el
 plan es medir en el móvil cuánto tarda y cuánta batería gasta escuchando y, si es demasiado,
 volver a V2.4 (`git revert` y los modelos viejos en `~/Documentos/Software/ModelosBirdDroid/v2.4`).
 - **Modelo**: BirdNET+ V3.0.1 Global 12K, **versión recortada FP16** para móviles (71 MB; una de

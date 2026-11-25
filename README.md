@@ -6,7 +6,7 @@ Versión para Android de [BirdApp](https://github.com/baltamir1978/BirdApp) (iOS
 cero en Kotlin + Jetpack Compose. Funciona sin Google Play (GrapheneOS): LiteRT va dentro de la
 app.
 
-**Estado: 0.6.0** (25-nov-2026): pasa a BirdNET+ V3; sin probar todavía en el móvil. Ver `CLAUDE.md`.
+**Estado: 0.6.1** (25-nov-2026): BirdNET+ V3; sin probar todavía en el móvil. Ver `CLAUDE.md`.
 
 ## Qué hace
 
@@ -28,6 +28,7 @@ app.
 Tools/instalar-entorno.sh       # JDK 17, Android SDK y Gradle en ~/Android, sin sudo
 Tools/descargar-modelos.sh      # ~90 MB de modelos (no están en el repositorio)
 ./gradlew testDebugUnitTest lintDebug assembleRelease
+./gradlew connectedDebugAndroidTest   # los modelos con el LiteRT de la app, en un emulador x86_64
 ```
 
 Hace falta clonar también [droid-common](https://github.com/baltamir1978/droid-common) **en la

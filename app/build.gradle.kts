@@ -20,11 +20,12 @@ android {
         applicationId = "es.altamirano.bird"
         minSdk = 31          // Android 12
         targetSdk = 36
-        versionCode = 12
-        versionName = "0.6.0"
+        versionCode = 13
+        versionName = "0.6.1"
         // Los móviles de hoy (y los Pixel de GrapheneOS) son arm64: el motor de LiteRT sólo para ese.
         ndk { abiFilters += "arm64-v8a" }
         buildConfigField("String", "XENO_CANTO_KEY", localString("xenocanto.apiKey"))
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     // La clave de release vive fuera del repositorio; sin ella la release sale sin firmar.
@@ -44,6 +45,9 @@ android {
     lint { warning += "NonObservableLocale" }
 
     buildTypes {
+        // La de depuración también para x86_64: así los modelos se prueban en el emulador
+        // (`./gradlew connectedDebugAndroidTest`, ver CLAUDE.md), con el mismo LiteRT que el móvil.
+        debug { ndk { abiFilters += "x86_64" } }
         release {
             if (releaseKey != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
@@ -84,6 +88,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.work.runtime)
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext)
+    androidTestImplementation(libs.androidx.test.runner)
 }
 
 // Los modelos no están en el repositorio: se bajan con Tools/descargar-modelos.sh.
