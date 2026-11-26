@@ -18,20 +18,20 @@ jobs:
     timeout-minutes: 30
     steps:
       # El código compartido va en otro repositorio y se incluye desde la carpeta de al lado.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: BirdDroid
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: baltamir1978/droid-common
           path: droid-common
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # Los modelos no van en el repositorio (~65 MB): se bajan una vez y se guardan en caché.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: BirdDroid/app/src/main/assets/models
           key: modelos-${{ hashFiles('BirdDroid/Tools/descargar-modelos.sh') }}
@@ -44,7 +44,7 @@ jobs:
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug --console=plain
       - name: Informe de lint
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: informes
           path: |
