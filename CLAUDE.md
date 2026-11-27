@@ -6,6 +6,13 @@ la carpeta de proyectos; aquí va lo propio de esta.
 
 ## Estado (25-nov-2026)
 
+**En Google Play desde el 27-nov-2026** (prueba interna, la 0.6.1 sin cambios de código): app dada de
+alta ese día en la cuenta «brunoalt» (`es.altamirano.bird`), firma de aplicaciones cambiada a la clave de
+siempre (`bird-release.jks`, por PEPK; huella SHA-256 `5B:EB:B4:5F…7B:44` comprobada en la consola), sin
+la comprobación del instalador y con la lista de testers «Bruno». El AAB (88 MB) no cabía en la subida del
+navegador (10 MB): ver el `CLAUDE.md` de `~/Proyectos`. Las siguientes versiones, igual que las demás apps
+(subir `versionCode`, AAB a Play y APK a `~/Documentos/Software`).
+
 **0.6.1 (25-nov-2026): la 0.6.0 no escuchaba.** En el móvil, «El análisis ha fallado: escucha
 detenida» a la primera ventana. Las dos salidas del modelo se creaban del mismo tamaño: en
 `Array(1) { FloatArray(…shape(it)…) }` el `it` es el índice del array (siempre 0), no el de la
