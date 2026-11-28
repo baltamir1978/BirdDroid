@@ -108,8 +108,8 @@ especie en 10 min, **desempate** cuando el segundo queda al 65 % o más, fotos (
 arrastrando un recuadro, EXIF (sitio y fecha para el filtro), **fusión audio↔foto** (lo oído en
 10 min sube y se renormaliza), ficha de Wikipedia, canto de xeno-canto (con clave), ajustes.
 
-Falta: el modelo ibérico de iOS, widgets, accesos directos, y confirmar en el móvil si la ubicación del EXIF llega
-con fotos compartidas desde Google Fotos (lo demás, probado por Bruno el 25-nov-2026).
+Falta: el modelo ibérico de iOS, widgets, accesos directos. Lo demás, probado por Bruno el 25-nov-2026; si la
+ubicación del EXIF llega con fotos compartidas desde Google Fotos no se ha comprobado y Bruno no lo necesita (28-nov-2026).
 
 **Los modelos no van en el repositorio** (decidido el 5-nov-2026; el plan era Git LFS, pero aquí
 no había `git-lfs` y se prefirió no instalar binarios de fuera): `Tools/descargar-modelos.sh`
